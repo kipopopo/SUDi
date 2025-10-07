@@ -157,7 +157,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
   }).slice(0, 5);
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" data-testid="dashboard-component">
         <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title">Welcome back, Admin!</h1>
             <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary">Here's a snapshot of your system. Ready to engage your audience?</p>

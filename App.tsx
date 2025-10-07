@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, memo } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -177,6 +177,21 @@ const initialHistory: BlastHistoryItem[] = [
  * It also holds the centralized state for participants, departments, and templates.
  * @returns {React.ReactElement} The rendered App component.
  */
+
+// Memoizing components to prevent unnecessary re-renders
+const MemoizedDashboard = memo(Dashboard);
+const MemoizedParticipantsManager = memo(ParticipantsManager);
+const MemoizedDepartmentsManager = memo(DepartmentsManager);
+const MemoizedTemplatesManager = memo(TemplatesManager);
+const MemoizedBlastManager = memo(BlastManager);
+const MemoizedHistoryManager = memo(HistoryManager);
+const MemoizedAnalytics = memo(Analytics);
+const MemoizedSubscriptionManager = memo(SubscriptionManager);
+const MemoizedBillingManager = memo(BillingManager);
+const MemoizedProfileSettings = memo(ProfileSettings);
+const MemoizedEmailSettings = memo(EmailSettings);
+const MemoizedSenderSetup = memo(SenderSetup);
+
 const App: React.FC = () => {
   // ================================================================
   // NOTE FOR DEPLOYMENT OUTSIDE GOOGLE AI STUDIO
@@ -391,7 +406,7 @@ const App: React.FC = () => {
    * It also passes down the centralized state and setters to the relevant components.
    * @returns {React.ReactElement} The component for the currently selected view.
    */
-  const renderView = useCallback(() => {
+  const renderView = () => {
     const commonAiProps = {
       isSubscribed,
       aiUsage,
@@ -401,7 +416,7 @@ const App: React.FC = () => {
 
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard 
+        return <MemoizedDashboard
                   setCurrentView={setCurrentView}
                   departments={departments}
                   participants={participants}
@@ -409,29 +424,29 @@ const App: React.FC = () => {
                   history={history} 
                 />;
       case 'participants':
-        return <ParticipantsManager participants={participants} setParticipants={setParticipants} departments={departments} {...commonAiProps} />;
+        return <MemoizedParticipantsManager participants={participants} setParticipants={setParticipants} departments={departments} {...commonAiProps} />;
       case 'departments':
-        return <DepartmentsManager departments={departments} setDepartments={setDepartments} participants={participants} />;
+        return <MemoizedDepartmentsManager departments={departments} setDepartments={setDepartments} participants={participants} />;
       case 'templates':
-        return <TemplatesManager templates={templates} setTemplates={setTemplates} settings={settings} senderProfile={senderProfile} {...commonAiProps} />;
+        return <MemoizedTemplatesManager templates={templates} setTemplates={setTemplates} settings={settings} senderProfile={senderProfile} {...commonAiProps} />;
       case 'blast':
-        return <BlastManager templates={templates} departments={departments} participants={participants} history={history} setHistory={setHistory} settings={settings} senderProfile={senderProfile} />;
+        return <MemoizedBlastManager templates={templates} departments={departments} participants={participants} history={history} setHistory={setHistory} settings={settings} senderProfile={senderProfile} />;
       case 'history':
-        return <HistoryManager history={history} />;
+        return <MemoizedHistoryManager history={history} />;
       case 'analytics':
-        return <Analytics history={history} />;
+        return <MemoizedAnalytics history={history} />;
       case 'subscription':
-        return <SubscriptionManager isSubscribed={isSubscribed} setIsSubscribed={setIsSubscribed} />;
+        return <MemoizedSubscriptionManager isSubscribed={isSubscribed} setIsSubscribed={setIsSubscribed} />;
       case 'billing':
-        return <BillingManager paymentMethods={paymentMethods} setPaymentMethods={setPaymentMethods} invoices={invoices} />;
+        return <MemoizedBillingManager paymentMethods={paymentMethods} setPaymentMethods={setPaymentMethods} invoices={invoices} />;
       case 'profile':
-        return <ProfileSettings />;
+        return <MemoizedProfileSettings />;
       case 'emailSettings':
-        return <EmailSettings settings={settings} setSettings={setSettings} />;
+        return <MemoizedEmailSettings settings={settings} setSettings={setSettings} />;
       case 'senderSetup':
-        return <SenderSetup senderProfile={senderProfile} setSenderProfile={setSenderProfile} />;
+        return <MemoizedSenderSetup senderProfile={senderProfile} setSenderProfile={setSenderProfile} />;
       default:
-        return <Dashboard 
+        return <MemoizedDashboard
                   setCurrentView={setCurrentView}
                   departments={departments}
                   participants={participants}
@@ -439,7 +454,7 @@ const App: React.FC = () => {
                   history={history}
                 />;
     }
-  }, [currentView, participants, departments, templates, history, settings, senderProfile, isSubscribed, aiUsage, refreshAiUsage, paymentMethods, invoices]);
+  };
 
   return (
     <div className="min-h-screen bg-light-bg dark:bg-brand-darker text-light-text dark:text-brand-text font-sans flex relative overflow-x-hidden">
