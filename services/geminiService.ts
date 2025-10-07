@@ -22,12 +22,14 @@ import { recordAiUsage } from './usageService';
 //     Your backend would then securely call the Gemini API using the key
 //     stored on the server.
 // ================================================================
-if (!process.env.API_KEY) {
-  console.error("API_KEY environment variable not set.");
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("VITE_GEMINI_API_KEY environment variable not set. Please create a .env.local file and add the key.");
 }
 
 // Initialize the Google GenAI client with the API key.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 /**
  * Generates an email body using the Gemini AI model based on a user-provided prompt and tone, streaming the response.
