@@ -1,0 +1,5 @@
+{
+  "name": "Sistem Undangan Digital (SUDi)",
+  "description": "An AI-powered email blasting system to automate event invitations. Manage participants, departments, and email templates, and leverage AI to generate compelling email content effortlessly.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Undangan Digital (SUDi)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'brand-dark': '#0f172a',
+              'brand-darker': '#0a101e',
+              'brand-light': '#1e293b',
+              'brand-accent': '#f97316', // Primary: Orange
+              'brand-accent-purple': '#9333ea', // Secondary: Purple
+              'brand-text': '#e2e8f0',
+              'brand-text-secondary': '#94a3b8',
+
+              // Light Theme Colors
+              'light-bg': '#f1f5f9', // slate-100
+              'light-surface': '#ffffff', // white
+              'light-border': '#cbd5e1', // slate-300
+              'light-text': '#0f172a', // slate-900
+              'light-text-secondary': '#475569', // slate-600
+            },
+            fontFamily: {
+              sans: ['"Inter"', 'sans-serif'],
+              title: ['"Bricolage Grotesque"', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar Styles */
+      /* For Webkit-based browsers (Chrome, Safari, Edge, etc.) */
+      ::-webkit-scrollbar {
+        width: 8px; /* Width of the vertical scrollbar */
+        height: 8px; /* Height of the horizontal scrollbar */
+      }
+
+      ::-webkit-scrollbar-track {
+        /* The track is the "channel" where the scrollbar moves */
+        background: transparent; /* Make track invisible */
+      }
+
+      ::-webkit-scrollbar-thumb {
+        /* The draggable scrolling handle */
+        border-radius: 10px;
+      }
+
+      /* Scrollbar styles for light mode */
+      html:not(.dark) ::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* light-border (slate-300) */
+        border: 2px solid #f1f5f9; /* light-bg (slate-100) */
+      }
+
+      html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8; /* brand-text-secondary (slate-400) */
+      }
+
+      /* Scrollbar styles for dark mode */
+      html.dark ::-webkit-scrollbar-thumb {
+        background-color: #1e293b; /* brand-light (slate-700) */
+        border: 2px solid #0f172a; /* brand-dark */
+      }
+
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background-color: #334155; /* A slightly lighter version of brand-light */
+      }
+
+      /* For Firefox */
+      * {
+        scrollbar-width: thin;
+      }
+
+      html:not(.dark) {
+        scrollbar-color: #cbd5e1 #f1f5f9; /* thumb color, track color */
+      }
+
+      html.dark {
+        scrollbar-color: #1e293b #0f172a; /* thumb color, track color */
+      }
+    </style>
+     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+      // The jspdf-autotable plugin expects jsPDF to be a global variable.
+      // The UMD build of jspdf exposes it as window.jspdf.jsPDF, so we alias it here.
+      if (window.jspdf) {
+        window.jsPDF = window.jspdf.jsPDF;
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react/jsx-runtime": "https://aistudiocdn.com/react@^19.1.1/jsx-runtime.js",
+    "react/jsx-dev-runtime": "https://aistudiocdn.com/react@^19.1.1/jsx-dev-runtime.js",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.1.1/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
