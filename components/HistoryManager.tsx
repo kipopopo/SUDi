@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BlastHistoryItem, RecipientActivity } from '../types';
 import { CloseIcon, CheckCircleIcon, HistoryIcon, EyeIcon, CursorClickIcon, UserRemoveIcon, MailOpenIcon, DownloadIcon, LoadingIcon } from './common/Icons';
 import { useData } from '../contexts/DataContext';
@@ -6,6 +7,7 @@ import { useData } from '../contexts/DataContext';
 interface HistoryManagerProps {}
 
 const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> = ({ report, onClose }) => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'activity' | 'content'>('activity');
     const [searchTerm, setSearchTerm] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
@@ -222,8 +224,8 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
             <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl h-[90vh] p-6 flex flex-col">
                 <div className="flex justify-between items-start mb-4 flex-shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold font-title">{report.templateName} - Report</h2>
-                        <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">Sent to "{report.recipientGroup}" with {report.recipientCount} recipients</p>
+                        <h2 className="text-2xl font-bold font-title">{report.templateName} {t('historyManager.reportModal.title')}</h2>
+                        <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">{t('historyManager.reportModal.sentTo')} "{report.recipientGroup}" {t('historyManager.reportModal.withRecipients')} {report.recipientCount} recipients</p>
                     </div>
                     <div className="flex items-center space-x-2">
                         <button 
@@ -232,7 +234,7 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
                             className="flex items-center space-x-2 text-sm text-light-text-secondary dark:text-brand-text-secondary hover:text-light-text dark:hover:text-white bg-light-bg dark:bg-brand-light/50 hover:bg-slate-200 dark:hover:bg-brand-light p-2 rounded-lg transition disabled:opacity-50"
                         >
                             {isDownloading ? <LoadingIcon /> : <DownloadIcon />}
-                            <span className="hidden sm:inline">{isDownloading ? 'Downloading...' : 'Download PDF'}</span>
+                            <span className="hidden sm:inline">{isDownloading ? t('historyManager.reportModal.downloading') : t('historyManager.reportModal.downloadPdf')}</span>
                         </button>
                         <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-brand-light/50"><CloseIcon /></button>
                     </div>
@@ -245,8 +247,8 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
                     {/* Tabs */}
                     <div className="border-b border-light-border dark:border-brand-light/20 mb-4">
                         <nav className="-mb-px flex space-x-6">
-                            <button onClick={() => setActiveTab('activity')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'activity' ? 'border-brand-accent-purple dark:border-brand-accent text-brand-accent-purple dark:text-brand-accent' : 'border-transparent text-light-text-secondary dark:text-brand-text-secondary hover:border-gray-300'}`}>Recipient Activity</button>
-                            <button onClick={() => setActiveTab('content')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'content' ? 'border-brand-accent-purple dark:border-brand-accent text-brand-accent-purple dark:text-brand-accent' : 'border-transparent text-light-text-secondary dark:text-brand-text-secondary hover:border-gray-300'}`}>Email Content</button>
+                            <button onClick={() => setActiveTab('activity')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'activity' ? 'border-brand-accent-purple dark:border-brand-accent text-brand-accent-purple dark:text-brand-accent' : 'border-transparent text-light-text-secondary dark:text-brand-text-secondary hover:border-gray-300'}`}>{t('historyManager.reportModal.recipientActivity')}</button>
+                            <button onClick={() => setActiveTab('content')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'content' ? 'border-brand-accent-purple dark:border-brand-accent text-brand-accent-purple dark:text-brand-accent' : 'border-transparent text-light-text-secondary dark:text-brand-text-secondary hover:border-gray-300'}`}>{t('historyManager.reportModal.emailContent')}</button>
                         </nav>
                     </div>
 
@@ -254,15 +256,15 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
                         {activeTab === 'activity' ? (
                             <div>
                                 <div className="mb-4">
-                                    <input type="text" placeholder="Search recipients by name or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full max-w-sm bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    <input type="text" placeholder={t('historyManager.reportModal.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full max-w-sm bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
                                 </div>
                                 <div>
                                     <table className="w-full text-left">
                                         <thead className="bg-light-bg dark:bg-brand-light/30">
                                             <tr>
-                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">Name</th>
-                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">Email</th>
-                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">Status</th>
+                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">{t('historyManager.reportModal.name')}</th>
+                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">{t('historyManager.reportModal.email')}</th>
+                                                <th className="p-3 text-sm font-semibold text-light-text-secondary dark:text-brand-text-secondary uppercase">{t('historyManager.reportModal.status')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -290,6 +292,7 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
 };
 
 const HistoryManager: React.FC<HistoryManagerProps> = () => {
+    const { t } = useTranslation();
     const { history } = useData();
     const [selectedReport, setSelectedReport] = useState<BlastHistoryItem | null>(null);
 
@@ -323,8 +326,8 @@ const HistoryManager: React.FC<HistoryManagerProps> = () => {
         <>
             <div className="animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold font-title">Campaign Reports</h1>
-                    <p className="text-light-text-secondary dark:text-brand-text-secondary mt-2">A log of all past and scheduled email campaigns.</p>
+                    <h1 className="text-3xl font-bold font-title">{t('historyManager.title')}</h1>
+                    <p className="text-light-text-secondary dark:text-brand-text-secondary mt-2">{t('historyManager.subtitle')}</p>
                 </div>
 
                 <div className="space-y-4">
@@ -345,15 +348,15 @@ const HistoryManager: React.FC<HistoryManagerProps> = () => {
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <div className="flex-shrink-0 flex flex-wrap items-start justify-center md:justify-start gap-x-6 gap-y-4 text-sm text-center md:text-left">
                                          <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">Status</p>
+                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{t('historyManager.status')}</p>
                                             <div className="mt-1"><StatusBadge status={item.status} /></div>
                                          </div>
                                           <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">Recipients</p>
+                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{t('historyManager.recipients')}</p>
                                             <p className="font-medium mt-1">{item.recipientCount}</p>
                                          </div>
                                           <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{item.status === 'Scheduled' ? 'Scheduled For' : 'Sent On'}</p>
+                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{item.status === 'Scheduled' ? t('historyManager.scheduledFor') : t('historyManager.sentOn')}</p>
                                             <p className="font-medium mt-1 whitespace-nowrap">{formatDateTime(item.status === 'Scheduled' ? item.scheduledDate : item.sentDate)}</p>
                                          </div>
                                     </div>
@@ -362,7 +365,7 @@ const HistoryManager: React.FC<HistoryManagerProps> = () => {
                                             onClick={() => setSelectedReport(item)}
                                             disabled={item.status === 'Scheduled'}
                                             className="w-full md:w-auto bg-brand-accent-purple/10 text-brand-accent-purple dark:bg-brand-accent/10 dark:text-brand-accent font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-80 dark:hover:bg-opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <span>View Report</span>
+                                            <span>{t('historyManager.viewReport')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -370,7 +373,7 @@ const HistoryManager: React.FC<HistoryManagerProps> = () => {
                         ))
                     ) : (
                         <div className="text-center p-12 text-light-text-secondary dark:text-brand-text-secondary bg-light-surface dark:bg-brand-dark/50 rounded-lg">
-                            No email blasts have been sent or scheduled yet.
+                            {t('historyManager.noHistory')}
                         </div>
                     )}
                 </div>

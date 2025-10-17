@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useModal } from './contexts/ModalContext';
+
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
@@ -21,10 +23,12 @@ const UserManager = lazy(() => import('./components/UserManager'));
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { AiUsage } from './types';
 import { getAiUsage } from './services/usageService';
+import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext';
 
 const App: React.FC = () => {
-  const { isAuthenticated, login, logout, user } = useAuth();
+  const { theme } = useTheme();
+  const { isAuthenticated, login, logout, user, isLoading } = useAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -94,14 +98,21 @@ const App: React.FC = () => {
     promptSubscription: handlePromptSubscription,
   };
 
+  const { isExplorerOpen, closeExplorer, onSelect } = useModal();
+
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-brand-darker text-light-text dark:text-brand-text font-sans flex relative overflow-x-hidden">
+    <div className={`App ${theme} font-sans`}>
+
       <div className="absolute top-0 -left-1/4 w-96 h-96 bg-brand-accent-purple/10 dark:bg-brand-accent-purple/30 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
       <div className="absolute top-0 -right-1/4 w-96 h-96 bg-brand-accent/10 dark:bg-brand-accent/30 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-0 -left-1/4 w-96 h-96 bg-brand-accent/5 dark:bg-brand-accent/20 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
       
       <Suspense fallback={<div>Loading...</div>}>
-        {!isAuthenticated ? (
+        {isLoading ? (
+          <div className="w-full h-screen flex items-center justify-center">
+            <div>Loading...</div>
+          </div>
+        ) : !isAuthenticated ? (
           <div className="w-full h-screen flex items-center justify-center">
             <Routes>
               <Route path="/login" element={<LoginPage onLoginSuccess={(token, remember) => login(token, remember)} />} />

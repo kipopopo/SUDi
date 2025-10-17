@@ -9,7 +9,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 
 import { AppSettings } from '../types';
 import { AlignCenterIcon, AlignLeftIcon, AlignRightIcon, LinkIcon, ListOrderedIcon, ListUnorderedIcon, QuoteIcon, CheckCircleIcon, ImageIcon, HorizontalRuleIcon, UserIcon, LockIcon, BellIcon, BrushIcon, DangerIcon, UploadIcon, MailIcon, HistoryIcon, LoadingIcon } from './common/Icons';
-import { useAuth } from '../contexts/AuthContext';
+import ProfileSettings from './ProfileSettings';
 import { useSettings } from '../contexts/SettingsContext';
 
 type NavItemProps = {
@@ -103,7 +103,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = () => {
     const renderSection = () => {
         switch (activeSection) {
             case 'profile':
-                return <ProfileSection />;
+                return <ProfileSettings />;
             case 'password':
                 return <PasswordSection />;
             case 'email':
@@ -460,98 +460,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
     );
 };
 
-const ProfileSection: React.FC = () => {
-  const { user } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null); // URL or base64
-  const [showSuccess, setShowSuccess] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setName(user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username);
-      setEmail(user.email || '');
-    }
-  }, [user]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleProfileSave = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
-  };
-
-  return (
-    <div className="animate-fade-in-fast">
-      <h2 className="text-xl font-bold font-title mb-6">Personal Information</h2>
-      <form onSubmit={handleProfileSave} className="space-y-6">
-        <div className="flex items-center space-x-6">
-          <div className="relative">
-            <img
-              src={profileImage || 'https://i.pravatar.cc/150?u=a042581f4e29026704d'}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover border-4 border-light-border dark:border-brand-light/20"
-            />
-            <label
-              htmlFor="profile-upload"
-              className="absolute bottom-0 right-0 bg-brand-accent-purple text-white rounded-full p-1.5 cursor-pointer hover:bg-opacity-90 transition"
-              title="Upload new picture"
-            >
-              <UploadIcon className="w-4 h-4" />
-            </label>
-            <input id="profile-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-          </div>
-          <div className='flex-grow'>
-            <p className="text-lg font-semibold">{name}</p>
-            <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">{email}</p>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Full Name</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full bg-light-bg dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
-          />
-        </div>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email Address</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            disabled
-            title="Changing email address is not supported yet."
-            className="w-full bg-light-bg dark:bg-brand-light/20 p-2.5 rounded-md border border-light-border dark:border-brand-light/20 cursor-not-allowed"
-          />
-        </div>
-        <div className="pt-2 flex items-center justify-end space-x-4">
-          {showSuccess && (
-            <div className="flex items-center space-x-2 text-green-600 dark:text-green-400 animate-fade-in">
-              <CheckCircleIcon />
-              <span className="font-semibold text-sm">Saved!</span>
-            </div>
-          )}
-          <button type="submit" className="bg-brand-accent-purple text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition">Save Changes</button>
-        </div>
-      </form>
-    </div>
-  );
-};
   
   const PasswordSection: React.FC = () => {
     const [currentPassword, setCurrentPassword] = useState('');

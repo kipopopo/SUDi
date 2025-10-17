@@ -5,11 +5,15 @@ interface User {
     id: number;
     username: string;
     role: string;
+    firstName: string;
+    lastName: string;
+    email: string;
 }
 
 interface AuthContextType {
     isAuthenticated: boolean;
     user: User | null;
+    isLoading: boolean;
     login: (token: string, remember: boolean) => void;
     logout: () => void;
 }
@@ -19,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -35,11 +40,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     useEffect(() => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (token) {
-            const decoded = jwtDecode<User>(token);
-            setUser(decoded);
-            setIsAuthenticated(true);
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (token) {
+                const decoded = jwtDecode<User>(token);
+                setUser(decoded);
+                setIsAuthenticated(true);
+            }
+        } catch (e) {
+            console.error('Error decoding token:', e);
+            // Token might be invalid, so log out the user
+            logout();
+        } finally {
+            setIsLoading(false);
         }
     }, []);
 
@@ -85,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

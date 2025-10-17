@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 
@@ -7,6 +8,7 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -24,11 +26,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen bg-light-bg dark:bg-brand-darker flex items-center justify-center">
       <div className="bg-light-surface dark:bg-brand-dark p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-light-text dark:text-white mb-2">Sistem Undangan Digital (SUDi)</h1>
+        <h1 className="text-3xl font-bold text-center text-light-text dark:text-white mb-2">{t('loginPage.title')}</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Username</label>
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.usernameLabel')}</label>
             <input
               type="text"
               value={username}
@@ -37,7 +39,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Password</label>
+            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.passwordLabel')}</label>
             <input
               type="password"
               value={password}
@@ -56,7 +58,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 className="h-4 w-4 text-brand-accent-purple dark:text-brand-accent focus:ring-brand-accent-purple dark:focus:ring-brand-accent border-gray-300 rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-light-text-secondary dark:text-brand-text-secondary">
-                Remember me
+                {t('loginPage.rememberMeLabel')}
               </label>
             </div>
           </div>
@@ -65,10 +67,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           onClick={handleLogin}
           className="w-full bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition mt-6"
         >
-          Login
+          {
+            t('loginPage.loginButton')
+          }
         </button>
         <p className="text-center text-sm text-light-text-secondary dark:text-brand-text-secondary mt-4">
-          Don't have an account? <Link to="/register" className="text-brand-accent-purple dark:text-brand-accent">Register</Link>
+          {t('loginPage.registerPrompt')} <Link to="/register" className="text-brand-accent-purple dark:text-brand-accent">{t('loginPage.registerLink')}</Link>
         </p>
       </div>
     </div>

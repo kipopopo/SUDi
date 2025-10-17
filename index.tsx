@@ -1,3 +1,4 @@
+import './src/i18n';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -5,6 +6,7 @@ import App from './App';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
+import { ModalProvider } from './contexts/ModalContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 
 // Find the root DOM element where the React application will be mounted.
@@ -29,7 +31,9 @@ root.render(
         <AuthProvider>
           <DataProvider>
             <SettingsProvider>
-              <App />
+              <ModalProvider>
+                <App />
+              </ModalProvider>
             </SettingsProvider>
           </DataProvider>
         </AuthProvider>

@@ -1,0 +1,76 @@
+
+{
+  "globalEmailSettings": {
+    "title": "Global Email Settings",
+    "headerLabel": "Global Header (HTML)",
+    "footerLabel": "Global Footer (HTML)",
+    "headerPlaceholder": "<!-- HTML for your email header, e.g., logo, company name -->",
+    "footerPlaceholder": "<!-- HTML for your email footer, e.g., unsubscribe link, address -->",
+    "saveSuccess": "Settings Saved!",
+    "saveButton": "Save Changes"
+  },
+  "header": {
+    "title": "Sistem Undangan Digital",
+    "userMenuTitle": "User Menu",
+    "profileSummary": "Profile Summary",
+    "activityLogs": "Activity Logs",
+    "changeProfilePic": "Change Profile Picture",
+    "logout": "Logout"
+  },
+  "historyManager": {
+    "title": "Campaign Reports",
+    "subtitle": "A log of all past and scheduled email campaigns.",
+    "noHistory": "No email blasts have been sent or scheduled yet.",
+    "status": "Status",
+    "recipients": "Recipients",
+    "sentOn": "Sent On",
+    "scheduledFor": "Scheduled For",
+    "viewReport": "View Report",
+    "reportModal": {
+      "title": "- Report",
+      "sentTo": "Sent to",
+      "withRecipients": "with recipients",
+      "downloadPdf": "Download PDF",
+      "downloading": "Downloading...",
+      "recipientActivity": "Recipient Activity",
+      "emailContent": "Email Content",
+      "searchPlaceholder": "Search recipients by name or email...",
+      "name": "Name",
+      "email": "Email",
+      "status": "Status"
+    }
+  },
+  "loginPage": {
+    "title": "Sistem Undangan Digital (SUDi)",
+    "usernameLabel": "Username",
+    "passwordLabel": "Password",
+    "rememberMeLabel": "Remember me",
+    "loginButton": "Login",
+    "registerPrompt": "Don't have an account?",
+    "registerLink": "Register"
+  },
+  "registrationPage": {
+    "title": "Register",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
+    "emailLabel": "Email",
+    "usernameLabel": "Username",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "registerButton": "Register",
+    "loginPrompt": "Already have an account?",
+    "loginLink": "Login",
+    "welcomeMessage": "Welcome to SUDi",
+    "welcomeSubtitle": "Sistem Undangan Digital (SUDi) helps you create and manage beautiful digital invitations for your events.",
+    "feature1": "Create stunning e-cards with customizable templates",
+    "feature2": "Send bulk invitations to multiple recipients",
+    "feature3": "Track delivery and engagement metrics",
+    "feature4": "Manage departments and participants easily",
+    "passwordRequirementsTitle": "Password Requirements",
+    "passwordRequirement1": "At least 8 characters long",
+    "passwordRequirement2": "Include uppercase letter",
+    "passwordRequirement3": "Include lowercase letter",
+    "passwordRequirement4": "Include at least one number",
+    "passwordRequirement5": "Include at least one special character"
+  }
+}

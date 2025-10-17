@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from './common/ThemeToggle';
 import { UserIcon, LogoutIcon, MenuIcon } from './common/Icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -19,6 +20,7 @@ interface HeaderProps {
  * @returns {React.ReactElement} The rendered header component.
  */
 export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isModalOpen, isSidebarCollapsed }) => {
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   // State to store the URL of the user's avatar image.
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -90,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isMod
         <button onClick={onMenuClick} className="lg:hidden text-light-text dark:text-brand-text p-1">
           <MenuIcon />
         </button>
-        <h1 className="text-lg sm:text-xl font-bold text-light-text dark:text-brand-text tracking-wider font-title">Sistem Undangan Digital</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-light-text dark:text-brand-text tracking-wider font-title">{t('header.title')}</h1>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4">
         <ThemeToggle />
@@ -104,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isMod
           <button 
             onClick={toggleDropdown} 
             className="w-10 h-10 rounded-full bg-brand-accent-purple/20 dark:bg-brand-light/50 flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-brand-accent transition-all"
-            title="User Menu"
+            title={t('header.userMenuTitle')}
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
@@ -118,29 +120,29 @@ export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isMod
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-light-surface dark:bg-brand-dark rounded-md shadow-lg py-1 z-50 border border-light-border dark:border-brand-light/20 animate-fade-in-up">
               <button 
-                onClick={() => { /* Navigate to Profile Summary */ toggleDropdown(); }}
+                onClick={() => { toggleDropdown(); }}
                 className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
               >
-                Profile Summary
+                {t('header.profileSummary')}
               </button>
               <button 
-                onClick={() => { /* Navigate to Activity Logs */ toggleDropdown(); }}
+                onClick={() => { toggleDropdown(); }}
                 className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
               >
-                Activity Logs
+                {t('header.activityLogs')}
               </button>
               <button 
                 onClick={() => { handleAvatarClick(); toggleDropdown(); }}
                 className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
               >
-                Change Profile Picture
+                {t('header.changeProfilePic')}
               </button>
               <div className="border-t border-light-border dark:border-brand-light/20 my-1"></div>
               <button 
                 onClick={() => { handleLogout(); toggleDropdown(); }}
                 className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
               >
-                <LogoutIcon className="inline-block mr-2 w-5 h-5" /> Logout
+                <LogoutIcon className="inline-block mr-2 w-5 h-5" /> {t('header.logout')}
               </button>
             </div>
           )}

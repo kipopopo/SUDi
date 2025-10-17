@@ -5,7 +5,7 @@ import { recordAiUsage } from './usageService';
 // ================================================================
 // NOTE FOR DEPLOYMENT OUTSIDE GOOGLE AI STUDIO
 // ================================================================
-// Google AI Studio automatically provides the `process.env.API_KEY` when you
+// Google AI Studio automatically provides the `import.meta.env.VITE_API_KEY` when you
 // run the application.
 //
 // For a production deployment, you must manage your API key securely:
@@ -22,12 +22,12 @@ import { recordAiUsage } from './usageService';
 //     Your backend would then securely call the Gemini API using the key
 //     stored on the server.
 // ================================================================
-if (!process.env.API_KEY) {
-  console.error("API_KEY environment variable not set.");
+if (!import.meta.env.VITE_API_KEY) {
+  console.error("VITE_API_KEY environment variable not set.");
 }
 
 // Initialize the Google GenAI client with the API key.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY as string });
 
 /**
  * Generates an email body using the Gemini AI model based on a user-provided prompt and tone, streaming the response.

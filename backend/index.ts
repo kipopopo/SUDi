@@ -43,8 +43,8 @@ const upload = multer({ dest: 'uploads/' });
 
 app.post('/api/upload-ecard-backdrop', upload.single('ecardBackdrop'), uploadFile);
 
-app.get('/api/ecard-backdrop/:filename', (req, res) => {
-  const filename = req.params.filename;
+app.get(/\/api\/ecard-backdrop\/(.*)/, (req, res) => {
+  const filename = (req.params as any)[0];
   const filePath = path.join(__dirname, 'uploads', filename);
 
   fs.access(filePath, fs.constants.F_OK, (err) => {
@@ -267,7 +267,7 @@ db.serialize(() => {
         } else if (row.count === 0) {
           const salt = bcrypt.genSaltSync(10);
           const hash = bcrypt.hashSync('superadmin', salt);
-          db.run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['superadmin', hash, 'SuperAdmin'], (err) => {
+          db.run('INSERT INTO users (username, password, role, firstName, lastName, email) VALUES (?, ?, ?, ?, ?, ?)', ['superadmin', hash, 'SuperAdmin', 'Super', 'Admin', 'superadmin@sudi.app'], (err) => {
             if (err) {
               console.error('Error inserting superadmin:', err.message);
             }
@@ -322,7 +322,40 @@ db.serialize(() => {
           });
         }
       });
+      db.run("UPDATE users SET firstName = 'Super', lastName = 'Admin', email = 'superadmin@sudi.app' WHERE username = 'superadmin' AND (firstName IS NULL OR lastName IS NULL OR email IS NULL)");
     }
+  });
+});
+
+app.post('/api/ecard-backdrops/folders', (req, res) => {
+  const { folderName } = req.body;
+  const currentPath = req.query.path as string || '/';
+
+  if (!folderName) {
+    return res.status(400).json({ error: 'Folder name is required' });
+  }
+  const folderPath = path.join(__dirname, 'uploads', currentPath, folderName);
+  fs.mkdir(folderPath, { recursive: true }, (err) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to create folder' });
+      return;
+    }
+    res.json({ message: 'Folder created successfully' });
+  });
+});
+
+app.get('/api/ecard-backdrops', (req, res) => {
+  const currentPath = req.query.path as string || '/';
+  const uploadsPath = path.join(__dirname, 'uploads', currentPath);
+
+  fs.readdir(uploadsPath, { withFileTypes: true }, (err, files) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to read uploads directory' });
+      return;
+    }
+    const fileNames = files.filter(file => !file.isDirectory()).map(file => file.name);
+    const folderNames = files.filter(file => file.isDirectory()).map(file => file.name);
+    res.json({ files: fileNames, folders: folderNames });
   });
 });
 
@@ -709,7 +742,7 @@ app.post('/api/login', (req, res) => {
       res.status(401).json({ error: 'Invalid password' });
       return;
     }
-    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: 86400 });
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role, firstName: user.firstName, lastName: user.lastName, email: user.email }, process.env.JWT_SECRET || 'secret', { expiresIn: 86400 });
     res.status(200).json({ auth: true, token });
   });
 });

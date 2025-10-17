@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 const RegistrationPage: React.FC = () => {
+    const { t } = useTranslation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -77,11 +79,11 @@ const RegistrationPage: React.FC = () => {
             <div className="bg-light-surface dark:bg-brand-dark p-8 rounded-lg shadow-lg w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column: Registration Form */}
                 <div>
-                    <h2 className="text-2xl font-bold text-center text-light-text dark:text-white mb-6">Register</h2>
+                    <h2 className="text-2xl font-bold text-center text-light-text dark:text-white mb-6">{t('registrationPage.title')}</h2>
                     {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">First Name</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.firstNameLabel')}</label>
                             <input
                                 type="text"
                                 value={firstName}
@@ -90,7 +92,7 @@ const RegistrationPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Last Name</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.lastNameLabel')}</label>
                             <input
                                 type="text"
                                 value={lastName}
@@ -99,7 +101,7 @@ const RegistrationPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.emailLabel')}</label>
                             <input
                                 type="email"
                                 value={email}
@@ -108,7 +110,7 @@ const RegistrationPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Username</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.usernameLabel')}</label>
                             <input
                                 type="text"
                                 value={username}
@@ -117,7 +119,7 @@ const RegistrationPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Password</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.passwordLabel')}</label>
                             <input
                                 type="password"
                                 value={password}
@@ -126,7 +128,7 @@ const RegistrationPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Confirm Password</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('registrationPage.confirmPasswordLabel')}</label>
                             <input
                                 type="password"
                                 value={confirmPassword}
@@ -139,59 +141,61 @@ const RegistrationPage: React.FC = () => {
                         onClick={handleRegister}
                         className="w-full bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition mt-6"
                     >
-                        Register
+                        {
+                            t('registrationPage.registerButton')
+                        }
                     </button>
                     <p className="text-center text-sm text-light-text-secondary dark:text-brand-text-secondary mt-4">
-                        Already have an account? <Link to="/login" className="text-brand-accent-purple dark:text-brand-accent">Login</Link>
+                        {t('registrationPage.loginPrompt')} <Link to="/login" className="text-brand-accent-purple dark:text-brand-accent">{t('registrationPage.loginLink')}</Link>
                     </p>
                 </div>
 
                 {/* Right Column: Additional Information */}
                 <div className="flex flex-col justify-center">
-                    <h3 className="text-xl font-semibold text-light-text dark:text-white mb-4">Welcome to SUDi</h3>
+                    <h3 className="text-xl font-semibold text-light-text dark:text-white mb-4">{t('registrationPage.welcomeMessage')}</h3>
                     <p className="text-light-text-secondary dark:text-brand-text-secondary mb-4">
-                        Sistem Undangan Digital (SUDi) helps you create and manage beautiful digital invitations for your events.
+                        {t('registrationPage.welcomeSubtitle')}
                     </p>
                     <ul className="space-y-2 text-sm text-light-text-secondary dark:text-brand-text-secondary">
                         <li className="flex items-center">
                             <span className="text-green-500 mr-2">✓</span>
-                            Create stunning e-cards with customizable templates
+                            {t('registrationPage.feature1')}
                         </li>
                         <li className="flex items-center">
                             <span className="text-green-500 mr-2">✓</span>
-                            Send bulk invitations to multiple recipients
+                            {t('registrationPage.feature2')}
                         </li>
                         <li className="flex items-center">
                             <span className="text-green-500 mr-2">✓</span>
-                            Track delivery and engagement metrics
+                            {t('registrationPage.feature3')}
                         </li>
                         <li className="flex items-center">
                             <span className="text-green-500 mr-2">✓</span>
-                            Manage departments and participants easily
+                            {t('registrationPage.feature4')}
                         </li>
                     </ul>
                     <div className="mt-6 p-4 bg-light-bg dark:bg-brand-light/20 rounded-md">
-                        <h4 className="font-medium text-light-text dark:text-white mb-2">Password Requirements</h4>
+                        <h4 className="font-medium text-light-text dark:text-white mb-2">{t('registrationPage.passwordRequirementsTitle')}</h4>
                         <ul className="text-xs space-y-1">
                             <li className={`flex items-center ${passwordValidations.length ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
                                 <span className={`mr-2 ${passwordValidations.length ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
-                                At least 8 characters long
+                                {t('registrationPage.passwordRequirement1')}
                             </li>
                             <li className={`flex items-center ${passwordValidations.uppercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
                                 <span className={`mr-2 ${passwordValidations.uppercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
-                                Include uppercase letter
+                                {t('registrationPage.passwordRequirement2')}
                             </li>
                             <li className={`flex items-center ${passwordValidations.lowercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
                                 <span className={`mr-2 ${passwordValidations.lowercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
-                                Include lowercase letter
+                                {t('registrationPage.passwordRequirement3')}
                             </li>
                             <li className={`flex items-center ${passwordValidations.number ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
                                 <span className={`mr-2 ${passwordValidations.number ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
-                                Include at least one number
+                                {t('registrationPage.passwordRequirement4')}
                             </li>
                             <li className={`flex items-center ${passwordValidations.special ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
                                 <span className={`mr-2 ${passwordValidations.special ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
-                                Include at least one special character
+                                {t('registrationPage.passwordRequirement5')}
                             </li>
                         </ul>
                     </div>

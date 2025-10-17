@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -14,7 +15,9 @@ import { addTemplate, updateTemplate, deleteTemplate } from '../services/templat
 import { generateEcardPdf } from '../utils/ecardGenerator';
 import { useData } from '../contexts/DataContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useModal } from '../contexts/ModalContext';
 import { DeleteTemplateModal } from './TemplateModals';
+import EcardBackdropExplorer from './EcardBackdropExplorer';
 import Draggable from 'react-draggable';
 
 const MenuBar = ({ editor, placeholders }: { editor: any, placeholders: string[] }) => {
@@ -117,7 +120,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
   const [ecardBackdropPreview, setEcardBackdropPreview] = useState<string | null>(null);
   
   const [testEmail, setTestEmail] = useState('');
-  const [generatedPdfPreview, setGeneratedPdfPreview] = useState<string | null>(null);
+  const { openExplorer } = useModal();
 
   const stageRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLDivElement>(null);
@@ -715,6 +718,8 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
       {isDeleteModalOpen && templateToDelete && <DeleteTemplateModal template={templateToDelete} onClose={() => setIsDeleteModalOpen(false)} isSidebarCollapsed={isSidebarCollapsed} />}
 
+
+
       {isEditorOpen && (
         <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}>
           <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl max-w-full h-[90vh] p-4 sm:p-6 lg:p-8 flex flex-col">
@@ -758,7 +763,13 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                             <h3 className="text-lg font-bold">E-Card Settings</h3>
                             <div>
                                 <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">E-Card Backdrop</label>
-                                <input type="file" name="ecardBackdrop" onChange={handleFileChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                <div className="flex items-center space-x-2">
+                                    <input type="text" name="ecardBackdropPath" value={currentTemplate.ecardBackdropPath ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="/uploads/backdrop.png" />
+                                    <button type="button" onClick={() => openExplorer((path) => setCurrentTemplate(prev => ({...prev, ecardBackdropPath: path})))} className="bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:bg-opacity-90 transition">
+                                        <FolderIcon />
+                                        <span>Browse</span>
+                                    </button>
+                                </div>
                             </div>
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold mt-4">E-Card Text Positioning</h3>

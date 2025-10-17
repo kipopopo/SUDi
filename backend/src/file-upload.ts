@@ -7,14 +7,15 @@ export const uploadFile = (req: Request, res: Response) => {
     return res.status(400).send('No file uploaded.');
   }
 
+  const currentPath = req.query.path as string || '/';
   const tempPath = req.file!.path;
-  const targetPath = path.join(__dirname, '../uploads', req.file!.originalname);
+  const targetPath = path.join(__dirname, '../uploads', currentPath, req.file!.originalname);
 
   fs.rename(tempPath, targetPath, (err) => {
     if (err) {
       return res.status(500).send(err);
     }
 
-    res.status(200).json({ filePath: `uploads/${req.file!.originalname}` });
+    res.status(200).json({ filePath: `uploads${currentPath === '/' ? '/' : currentPath + '/'}${req.file!.originalname}` });
   });
 };
