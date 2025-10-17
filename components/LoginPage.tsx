@@ -26,7 +26,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen bg-light-bg dark:bg-brand-darker flex items-center justify-center">
       <div className="bg-light-surface dark:bg-brand-dark p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-light-text dark:text-white mb-2">{t('loginPage.title')}</h1>
+        <div className="flex justify-center mb-6">
+          <img
+            src="/assets/logo-sudi-light-mode.png"
+            alt="SUDi Logo"
+            className="h-16 dark:hidden"
+          />
+          <img
+            src="/assets/logo-sudi-dark-mode.png"
+            alt="SUDi Logo"
+            className="h-16 hidden dark:block"
+          />
+        </div>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="space-y-4">
           <div>

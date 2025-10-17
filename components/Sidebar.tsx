@@ -37,10 +37,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, isCollapsed
       <div className={`flex items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
-            <svg className="w-8 h-8 text-brand-accent-purple" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-            </svg>
-            <span className="text-xl font-semibold text-light-text dark:text-white font-title">SUDi</span>
+            <img
+              src="/assets/logo-sudi-light-mode.png"
+              alt="SUDi Logo"
+              className="h-8 dark:hidden"
+            />
+            <img
+              src="/assets/logo-sudi-dark-mode.png"
+              alt="SUDi Logo"
+              className="h-8 hidden dark:block"
+            />
           </div>
         )}
         <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-2 rounded-full hover:bg-light-bg dark:hover:bg-brand-light/50 text-light-text-secondary dark:text-brand-text-secondary transition">

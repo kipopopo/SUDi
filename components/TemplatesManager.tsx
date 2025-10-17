@@ -52,36 +52,36 @@ const MenuBar = ({ editor, placeholders }: { editor: any, placeholders: string[]
 
     return (
         <div className="tiptap-wrapper flex flex-wrap items-center gap-1 p-2 border border-light-border dark:border-brand-light/20 border-b-0 rounded-t-md bg-light-surface dark:bg-brand-dark">
-            <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}><b>B</b></button>
-            <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'is-active' : ''}><i>I</i></button>
-            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? 'is-active' : ''}><u>U</u></button>
-            <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'is-active' : ''}><s>S</s></button>
+            <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={`${editor.isActive('bold') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><b>B</b></button>
+            <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={`${editor.isActive('italic') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><i>I</i></button>
+            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={`${editor.isActive('underline') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><u>U</u></button>
+            <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={`${editor.isActive('strike') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><s>S</s></button>
             <button onClick={() => {
 
 
                 editor.chain().focus().undo().run();
-            }} disabled={!editor.can().undo()}>Undo</button>
-            <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>Redo</button>
+            }} disabled={!editor.can().undo()} className="text-light-text-secondary dark:text-brand-text">Undo</button>
+            <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="text-light-text-secondary dark:text-brand-text">Redo</button>
             <div className="divider"></div>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}>H1</button>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}>H2</button>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}>H3</button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`${editor.isActive('heading', { level: 1 }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}>H1</button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 2 }).run()} className={`${editor.isActive('heading', { level: 2 }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}>H2</button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} disabled={!editor.can().chain().focus().toggleHeading({ level: 3 }).run()} className={`${editor.isActive('heading', { level: 3 }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}>H3</button>
             <div className="divider"></div>
-            <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}><ListUnorderedIcon /></button>
-            <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}><ListOrderedIcon /></button>
-            <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'is-active' : ''}><QuoteIcon /></button>
+            <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={`${editor.isActive('bulletList') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><ListUnorderedIcon /></button>
+            <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`${editor.isActive('orderedList') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><ListOrderedIcon /></button>
+            <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={`${editor.isActive('blockquote') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><QuoteIcon /></button>
             <div className="divider"></div>
-            <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}><AlignLeftIcon /></button>
-            <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}><AlignCenterIcon /></button>
-            <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}><AlignRightIcon /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`${editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><AlignLeftIcon /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`${editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><AlignCenterIcon /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`${editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><AlignRightIcon /></button>
             <div className="divider"></div>
-            <button onClick={setLink} className={editor.isActive('link') ? 'is-active' : ''}><LinkIcon /></button>
-            <button onClick={addImage}><ImageIcon /></button>
-            <button onClick={() => editor.chain().focus().setHorizontalRule().run()}><HorizontalRuleIcon /></button>
+            <button onClick={setLink} className={`${editor.isActive('link') ? 'is-active' : ''} text-light-text-secondary dark:text-brand-text`}><LinkIcon /></button>
+            <button onClick={addImage} className="text-light-text-secondary dark:text-brand-text"><ImageIcon /></button>
+            <button onClick={() => editor.chain().focus().setHorizontalRule().run()} className="text-light-text-secondary dark:text-brand-text"><HorizontalRuleIcon /></button>
             <div className="divider"></div>
-            <select onChange={(e) => handlePlaceholder(e.target.value)} className="bg-light-bg dark:bg-brand-light/50 p-1 rounded-md border border-light-border dark:border-brand-light text-sm">
+            <select onChange={(e) => handlePlaceholder(e.target.value)} className="bg-light-bg dark:bg-brand-light/50 p-1 rounded-md border border-light-border dark:border-brand-light text-sm text-light-text dark:text-white">
                 <option value="">Insert Placeholder</option>
-                {placeholders.map(p => <option key={p} value={p}>{p}</option>)}
+                {placeholders.map(p => <option key={p} value={p} className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-white">{p}</option>)}
             </select>
         </div>
     );
@@ -541,7 +541,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
   const footer = globalSettings?.globalFooter ?? '';
   const fullContent = `${header} ${body} ${footer}`;
 
-        return `<div style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"> ${fullContent} </div>`;
+        return `<div style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: var(--preview-text-color);"> ${fullContent} </div>`;
   }
 
   const renderTemplates = () => {
@@ -723,7 +723,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
       {isEditorOpen && (
         <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}>
           <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl max-w-full h-[90vh] p-4 sm:p-6 lg:p-8 flex flex-col">
-            <h2 className="text-2xl font-bold mb-6 font-title flex-shrink-0 dark:text-white">
+            <h2 className="text-2xl font-bold mb-6 font-title flex-shrink-0 text-light-text dark:text-white">
                 {templates.some(t => t.id === currentTemplate.id) ? 'Edit Template' : 'Create New Template'}
             </h2>
             
@@ -733,22 +733,22 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                     <>
                         {/* Basic Template Info */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold dark:text-white">Template Details</h3>
+                            <h3 className="text-lg font-bold text-light-text dark:text-white">Template Details</h3>
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                 <div>
-                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Template Name</label>
-                                    <input type="text" name="name" value={currentTemplate.name ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Monthly Newsletter" />
+                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Template Name</label>
+                                    <input type="text" name="name" value={currentTemplate.name ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" placeholder="e.g., Monthly Newsletter" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Category</label>
-                                    <input type="text" name="category" value={currentTemplate.category ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Marketing" list="category-suggestions" />
+                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Category</label>
+                                    <input type="text" name="category" value={currentTemplate.category ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" placeholder="e.g., Marketing" list="category-suggestions" />
                                     <datalist id="category-suggestions">{categories.filter(c => c !== 'all' && c !== 'Uncategorized').map(c => <option key={c} value={c} />)}</datalist>
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email Subject</label>
+                                <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Email Subject</label>
                                 <div className="flex items-center space-x-2">
-                                    <input type="text" name="subject" value={currentTemplate.subject ?? ''} onChange={handleTemplateChange} className={`flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border ${subjectError ? 'border-red-500' : 'border-light-border dark:border-brand-light'} focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent`} placeholder="Subject of the email" />
+                                    <input type="text" name="subject" value={currentTemplate.subject ?? ''} onChange={handleTemplateChange} className={`flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border ${subjectError ? 'border-red-500' : 'border-light-border dark:border-brand-light'} focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white`} placeholder="Subject of the email" />
                                     <button type="button" onClick={handleGenerateSubject} disabled={isGeneratingSubject || !editor?.getText().trim() || isAiDisabled} title={isAiDisabled ? "Daily AI limit reached" : "Generate subject with AI"} className="flex-shrink-0 bg-brand-accent-purple text-white font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 hover:bg-opacity-90 transition text-sm disabled:bg-slate-200 disabled:text-light-text-secondary dark:disabled:bg-brand-light dark:disabled:text-brand-text-secondary disabled:cursor-not-allowed">
                                         {isGeneratingSubject ? <LoadingIcon /> : <AIIcon />}
                                         <span className='hidden sm:inline'>{isGeneratingSubject ? '...' : 'AI'}</span>
@@ -760,11 +760,11 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                         {/* E-Card Settings */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold dark:text-white">E-Card Settings</h3>
+                            <h3 className="text-lg font-bold text-light-text dark:text-white">E-Card Settings</h3>
                             <div>
-                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">E-Card Backdrop</label>
+                                <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">E-Card Backdrop</label>
                                 <div className="flex items-center space-x-2">
-                                    <input type="text" name="ecardBackdropPath" value={currentTemplate.ecardBackdropPath ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="/uploads/backdrop.png" />
+                                    <input type="text" name="ecardBackdropPath" value={currentTemplate.ecardBackdropPath ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" placeholder="/uploads/backdrop.png" />
                                     <button type="button" onClick={() => openExplorer((path) => setCurrentTemplate(prev => ({...prev, ecardBackdropPath: path})))} className="bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:bg-opacity-90 transition">
                                         <FolderIcon />
                                         <span>Browse</span>
@@ -772,39 +772,39 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h3 className="text-lg font-bold mt-4 dark:text-white">E-Card Text Positioning</h3>
+                                <h3 className="text-lg font-bold mt-4 text-light-text dark:text-white">E-Card Text Positioning</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name X Position</label>
-                                        <input type="number" name="nameX" value={currentTemplate.nameX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Name X Position</label>
+                                        <input type="number" name="nameX" value={currentTemplate.nameX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Y Position</label>
-                                        <input type="number" name="nameY" value={currentTemplate.nameY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Name Y Position</label>
+                                        <input type="number" name="nameY" value={currentTemplate.nameY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Font Size</label>
-                                        <input type="number" name="nameFontSize" value={currentTemplate.nameFontSize ?? 48} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Name Font Size</label>
+                                        <input type="number" name="nameFontSize" value={currentTemplate.nameFontSize ?? 48} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Color</label>
-                                        <input type="color" name="nameColor" value={currentTemplate.nameColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Name Color</label>
+                                        <input type="color" name="nameColor" value={currentTemplate.nameColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role X Position</label>
-                                        <input type="number" name="roleX" value={currentTemplate.roleX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Role X Position</label>
+                                        <input type="number" name="roleX" value={currentTemplate.roleX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Y Position</label>
-                                        <input type="number" name="roleY" value={currentTemplate.roleY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Role Y Position</label>
+                                        <input type="number" name="roleY" value={currentTemplate.roleY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Font Size</label>
-                                        <input type="number" name="roleFontSize" value={currentTemplate.roleFontSize ?? 36} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Role Font Size</label>
+                                        <input type="number" name="roleFontSize" value={currentTemplate.roleFontSize ?? 36} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Color</label>
-                                        <input type="color" name="roleColor" value={currentTemplate.roleColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-1">Role Color</label>
+                                        <input type="color" name="roleColor" value={currentTemplate.roleColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                     </div>
                                 </div>
                             </div>
@@ -817,7 +817,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                         {/* Email Body Editor */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold dark:text-white">Email Body</h3>
+                            <h3 className="text-lg font-bold text-light-text dark:text-white">Email Body</h3>
                             <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
                                 <MenuBar editor={editor} placeholders={placeholders} />
                                 <EditorContent editor={editor} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
@@ -825,9 +825,9 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                         </div>
 
                         <div className="flex-shrink-0 mt-auto pt-4 border-t border-light-border dark:border-brand-light/20">
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-2">Send Test Email</label>
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-white mb-2">Send Test Email</label>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="recipient@example.com" className="flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="recipient@example.com" className="flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-light-text dark:text-white" />
                                 <button disabled title="This feature requires backend integration." className="bg-slate-300 text-slate-500 dark:bg-brand-light/50 dark:text-brand-text-secondary font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 cursor-not-allowed">
                                     <BlastIcon />
                                     <span>Send Test</span>
@@ -841,7 +841,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                 <div className="flex flex-col h-full overflow-y-auto space-y-6">
                     {/* Email Preview */}
                     <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
-                        <h3 className="text-lg font-bold mb-2 dark:text-white">Email Preview</h3>
+                        <h3 className="text-lg font-bold mb-2 text-light-text dark:text-white">Email Preview</h3>
                         <div className="flex-shrink-0 p-3 border-b border-light-border dark:border-brand-light/20">
                             <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">From: </span><strong className="text-light-text dark:text-white">{senderProfile?.name || '[Sender Name]'} &lt;{senderProfile?.email || '[sender.email@example.com]'}&gt;</strong></p>
                             <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">Subject: </span><strong className="text-light-text dark:text-white">{currentTemplate.subject ?? '[No Subject]'}</strong></p>
@@ -854,7 +854,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                     {/* E-card Preview */}
                     <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
-                        <h3 className="text-lg font-bold mb-2 dark:text-white">E-card Interactive Editor</h3>
+                        <h3 className="text-lg font-bold mb-2 text-light-text dark:text-white">E-card Interactive Editor</h3>
                         <div ref={stageRef} className="relative w-full h-full min-h-[400px] border border-dashed border-light-border dark:border-brand-light/20 rounded-md overflow-hidden">
                             {ecardBackdropPreview ? (
                                 <>
@@ -881,7 +881,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                                     </div>
                                 </>
                             ) : (
-                                <div className="text-center text-light-text-secondary dark:text-brand-text-secondary py-12">
+                                <div className="text-center text-light-text-secondary dark:text-white py-12">
                                     <p>Upload a backdrop to start the interactive editor</p>
                                 </div>
                             )}
