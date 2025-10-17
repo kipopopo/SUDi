@@ -87,8 +87,8 @@ export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isMod
 
 
   return (
-    <header className={`bg-light-bg dark:bg-brand-darker p-4 flex justify-between items-center border-b border-light-text-secondary dark:border-brand-light transition-transform duration-300 ease-in-out ${isModalOpen ? 'header-hidden' : ''}`}>
-      <div className="flex items-center space-x-4">
+    <header className={`bg-light-bg dark:bg-brand-darker p-4 flex justify-between items-center border-b border-light-text-secondary dark:border-brand-light transition-transform duration-300 ease-in-out ${isModalOpen ? '-translate-y-full' : ''}`}>
+      <div className="flex items-center">
         <button onClick={onMenuClick} className="lg:hidden text-light-text dark:text-brand-text p-1">
           <MenuIcon />
         </button>
@@ -111,8 +111,8 @@ export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isMod
             {avatarUrl ? (
               <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full p-1.5 text-brand-accent-purple dark:text-brand-accent">
-                <UserIcon />
+              <div className="w-full h-full flex items-center justify-center text-brand-accent-purple dark:text-brand-accent">
+                <UserIcon className="w-6 h-6" />
               </div>
             )}
           </button>

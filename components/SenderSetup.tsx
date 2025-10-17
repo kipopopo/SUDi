@@ -85,7 +85,7 @@ const SenderSetup: React.FC<SenderSetupProps> = () => {
     return (
         <div className="animate-fade-in max-w-3xl mx-auto">
             <div className="text-center mb-10">
-                <h1 className="text-3xl sm:text-4xl font-bold font-title">Sender Setup</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Sender Setup</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">Configure and verify the email address used to send campaigns.</p>
             </div>
 
@@ -116,7 +116,7 @@ const SenderSetup: React.FC<SenderSetupProps> = () => {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-light-border dark:border-brand-light/20">
-                    <h3 className="text-lg font-semibold mb-4">Verification Status</h3>
+                    <h3 className="text-lg font-semibold mb-4 dark:text-white">Verification Status</h3>
 
                     {status === 'unverified' && (
                         <div className="bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 p-4 rounded-lg flex flex-col items-center text-center">

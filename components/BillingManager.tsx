@@ -47,7 +47,7 @@ const BillingManager: React.FC<BillingManagerProps> = () => {
         <>
             <div className="animate-fade-in max-w-5xl mx-auto">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl sm:text-4xl font-bold font-title">Billing Information</h1>
+                    <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Billing Information</h1>
                     <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">Manage your payment methods and view your invoice history.</p>
                 </div>
                 
@@ -55,7 +55,7 @@ const BillingManager: React.FC<BillingManagerProps> = () => {
                     {/* Payment Methods */}
                     <div className="bg-light-surface dark:bg-brand-dark/50 p-8 rounded-xl border border-light-border dark:border-brand-light/20">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold font-title">Payment Methods</h2>
+                            <h2 className="text-xl font-bold font-title dark:text-white">Payment Methods</h2>
                             <button onClick={() => setIsAddCardModalOpen(true)} className="bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:bg-opacity-90 transition text-sm">
                                 <PlusIcon />
                                 <span>Add New Card</span>
@@ -85,7 +85,7 @@ const BillingManager: React.FC<BillingManagerProps> = () => {
                     
                     {/* Invoice History */}
                     <div className="bg-light-surface dark:bg-brand-dark/50 p-8 rounded-xl border border-light-border dark:border-brand-light/20">
-                        <h2 className="text-xl font-bold font-title mb-6">Invoice History</h2>
+                        <h2 className="text-xl font-bold font-title mb-6 dark:text-white">Invoice History</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="border-b border-light-border dark:border-brand-light/20">

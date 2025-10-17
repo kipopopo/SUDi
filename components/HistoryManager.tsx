@@ -224,7 +224,7 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
             <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl h-[90vh] p-6 flex flex-col">
                 <div className="flex justify-between items-start mb-4 flex-shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold font-title">{report.templateName} {t('historyManager.reportModal.title')}</h2>
+                        <h2 className="text-2xl font-bold font-title dark:text-white">{report.templateName} {t('historyManager.reportModal.title')}</h2>
                         <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">{t('historyManager.reportModal.sentTo')} "{report.recipientGroup}" {t('historyManager.reportModal.withRecipients')} {report.recipientCount} recipients</p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -326,7 +326,7 @@ const HistoryManager: React.FC<HistoryManagerProps> = () => {
         <>
             <div className="animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold font-title">{t('historyManager.title')}</h1>
+                    <h1 className="text-3xl font-bold font-title dark:text-white">{t('historyManager.title')}</h1>
                     <p className="text-light-text-secondary dark:text-brand-text-secondary mt-2">{t('historyManager.subtitle')}</p>
                 </div>
 

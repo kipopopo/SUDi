@@ -245,7 +245,7 @@ const ParticipantsManager: React.FC<ParticipantsManagerProps> = ({ isSubscribed,
     <>
       <div className="animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
-          <h1 className="text-3xl font-bold font-title">Manage Participants</h1>
+          <h1 className="text-3xl font-bold font-title dark:text-white">Manage Participants</h1>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start md:self-auto">
               <button
                 onClick={() => setIsTutorialOpen(true)}

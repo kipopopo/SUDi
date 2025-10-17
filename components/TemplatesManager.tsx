@@ -566,7 +566,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-bold text-lg">{template.name}</h3>
+                          <h3 className="font-bold text-lg dark:text-white">{template.name}</h3>
                           <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary truncate max-w-[200px] sm:max-w-full">
                             {template.subject}
                           </p>
@@ -625,7 +625,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
       <div className="animate-fade-in grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 flex flex-col space-y-8">
           <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4 flex items-center space-x-2"><AIIcon /> <span>Penjana Kandungan AI</span></h2>
+            <h2 className="text-xl font-bold mb-4 flex items-center space-x-2 dark:text-white"><AIIcon /> <span>Penjana Kandungan AI</span></h2>
             <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary mb-4">Terangkan emel yang ingin anda hantar, dan AI kami akan menulisnya dalam Bahasa Malaysia untuk anda.</p>
             
             <div className="mb-4">
@@ -676,7 +676,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
           {generatedBody && (
             <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-brand-accent-purple/30 dark:border-brand-accent/30 p-4 rounded-lg animate-fade-in">
-                <h3 className="font-bold mb-2">Kandungan Dijana:</h3>
+                <h3 className="font-bold mb-2 dark:text-white">Kandungan Dijana:</h3>
                 <textarea
                   readOnly
                   className="w-full h-48 bg-transparent text-light-text-secondary dark:text-brand-text-secondary text-sm p-2 rounded"
@@ -693,7 +693,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
         <div className="lg:col-span-2">
           <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
-            <h1 className="text-3xl font-bold font-title">Email Templates</h1>
+            <h1 className="text-3xl font-bold font-title dark:text-white">Email Templates</h1>
             <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start md:self-auto'>
               <select
                   value={selectedCategory}
@@ -723,7 +723,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
       {isEditorOpen && (
         <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}>
           <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl max-w-full h-[90vh] p-4 sm:p-6 lg:p-8 flex flex-col">
-            <h2 className="text-2xl font-bold mb-6 font-title flex-shrink-0">
+            <h2 className="text-2xl font-bold mb-6 font-title flex-shrink-0 dark:text-white">
                 {templates.some(t => t.id === currentTemplate.id) ? 'Edit Template' : 'Create New Template'}
             </h2>
             
@@ -733,7 +733,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                     <>
                         {/* Basic Template Info */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold">Template Details</h3>
+                            <h3 className="text-lg font-bold dark:text-white">Template Details</h3>
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                 <div>
                                     <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Template Name</label>
@@ -760,7 +760,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                         {/* E-Card Settings */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold">E-Card Settings</h3>
+                            <h3 className="text-lg font-bold dark:text-white">E-Card Settings</h3>
                             <div>
                                 <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">E-Card Backdrop</label>
                                 <div className="flex items-center space-x-2">
@@ -772,7 +772,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h3 className="text-lg font-bold mt-4">E-Card Text Positioning</h3>
+                                <h3 className="text-lg font-bold mt-4 dark:text-white">E-Card Text Positioning</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name X Position</label>
@@ -817,7 +817,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                         {/* Email Body Editor */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold">Email Body</h3>
+                            <h3 className="text-lg font-bold dark:text-white">Email Body</h3>
                             <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
                                 <MenuBar editor={editor} placeholders={placeholders} />
                                 <EditorContent editor={editor} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
@@ -841,7 +841,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                 <div className="flex flex-col h-full overflow-y-auto space-y-6">
                     {/* Email Preview */}
                     <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
-                        <h3 className="text-lg font-bold mb-2">Email Preview</h3>
+                        <h3 className="text-lg font-bold mb-2 dark:text-white">Email Preview</h3>
                         <div className="flex-shrink-0 p-3 border-b border-light-border dark:border-brand-light/20">
                             <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">From: </span><strong className="text-light-text dark:text-white">{senderProfile?.name || '[Sender Name]'} &lt;{senderProfile?.email || '[sender.email@example.com]'}&gt;</strong></p>
                             <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">Subject: </span><strong className="text-light-text dark:text-white">{currentTemplate.subject ?? '[No Subject]'}</strong></p>
@@ -854,7 +854,7 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
                     {/* E-card Preview */}
                     <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
-                        <h3 className="text-lg font-bold mb-2">E-card Interactive Editor</h3>
+                        <h3 className="text-lg font-bold mb-2 dark:text-white">E-card Interactive Editor</h3>
                         <div ref={stageRef} className="relative w-full h-full min-h-[400px] border border-dashed border-light-border dark:border-brand-light/20 rounded-md overflow-hidden">
                             {ecardBackdropPreview ? (
                                 <>

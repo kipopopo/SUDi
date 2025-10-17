@@ -31,7 +31,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ isSubscribed,
     return (
         <div className="animate-fade-in">
             <div className="text-center mb-10">
-                <h1 className="text-3xl sm:text-4xl font-bold font-title">Choose Your Plan</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Choose Your Plan</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">Unlock the full potential of AI for your email campaigns.</p>
             </div>
 
@@ -39,10 +39,10 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ isSubscribed,
                 {/* Free Plan */}
                 <div className={`relative bg-light-surface dark:bg-brand-dark/50 border ${isSubscribed ? 'border-light-border dark:border-brand-light/20' : 'border-brand-accent-purple dark:border-brand-accent'} rounded-xl p-8`}>
                     {!isSubscribed && <span className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-accent-purple dark:bg-brand-accent text-white dark:text-brand-darker text-xs font-bold px-3 py-1 rounded-full uppercase">Current Plan</span>}
-                    <h2 className="text-2xl font-bold font-title">Free Plan</h2>
+                    <h2 className="text-2xl font-bold font-title dark:text-white">Free Plan</h2>
                     <p className="text-light-text-secondary dark:text-brand-text-secondary mb-6">Perfect for getting started</p>
                     
-                    <p className="text-4xl font-extrabold mb-6 font-title">$0<span className="text-lg font-medium text-light-text-secondary dark:text-brand-text-secondary">/month</span></p>
+                    <p className="text-4xl font-extrabold mb-6 font-title dark:text-white">$0<span className="text-lg font-medium text-light-text-secondary dark:text-brand-text-secondary">/month</span></p>
 
                     <ul className="space-y-3 mb-8 text-light-text-secondary dark:text-brand-text-secondary">
                         <PlanFeature><strong>10</strong> AI Actions per day</PlanFeature>
@@ -62,7 +62,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ isSubscribed,
                  <div className={`relative bg-light-surface dark:bg-brand-dark/50 border ${isSubscribed ? 'border-brand-accent-purple dark:border-brand-accent' : 'border-light-border dark:border-brand-light/20'} rounded-xl p-8`}>
                     {isSubscribed && <span className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-accent-purple dark:bg-brand-accent text-white dark:text-brand-darker text-xs font-bold px-3 py-1 rounded-full uppercase">Current Plan</span>}
                     <div className="flex items-center space-x-3">
-                        <h2 className="text-2xl font-bold font-title">Pro Plan</h2>
+                        <h2 className="text-2xl font-bold font-title dark:text-white">Pro Plan</h2>
                         <CrownIcon className="w-6 h-6 text-yellow-500" />
                     </div>
                     <p className="text-light-text-secondary dark:text-brand-text-secondary mb-6">For power users and teams</p>

@@ -54,7 +54,7 @@ const EcardBackdropExplorer: React.FC<EcardBackdropExplorerProps> = ({ onClose, 
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4">
             <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] p-6 flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold font-title">E-card Backdrop Explorer</h2>
+                    <h2 className="text-2xl font-bold font-title dark:text-white">E-card Backdrop Explorer</h2>
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-brand-light/50"><CloseIcon /></button>
                 </div>
                 <div className="flex-grow overflow-y-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

@@ -21,14 +21,14 @@ const ProfileSettings: React.FC = () => {
     return (
         <div className="animate-fade-in max-w-4xl mx-auto">
             <div className="text-center mb-10">
-                <h1 className="text-3xl sm:text-4xl font-bold font-title">Profile Settings</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Profile Settings</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">Manage your personal information and account security.</p>
             </div>
             
             <div className="space-y-12">
                 {/* Personal Information */}
                 <div className="bg-light-surface dark:bg-brand-dark/50 p-8 rounded-xl border border-light-border dark:border-brand-light/20">
-                    <h2 className="text-xl font-bold font-title mb-6">Personal Information</h2>
+                    <h2 className="text-xl font-bold font-title mb-6 dark:text-white">Personal Information</h2>
                     <form onSubmit={handleProfileSave} className="space-y-4 max-w-lg">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>

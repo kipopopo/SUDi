@@ -24,7 +24,7 @@ const GlobalEmailSettings: React.FC = () => {
 
   return (
     <div className="animate-fade-in-fast">
-      <h2 className="text-xl font-bold font-title mb-6">{t('globalEmailSettings.title')}</h2>
+      <h2 className="text-xl font-bold font-title mb-6 dark:text-white">{t('globalEmailSettings.title')}</h2>
       <form onSubmit={handleSave} className="space-y-6">
         <div>
           <label htmlFor="globalHeader" className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('globalEmailSettings.headerLabel')}</label>

@@ -124,7 +124,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = () => {
     return (
         <div className="animate-fade-in max-w-6xl mx-auto">
             <div className="text-left mb-10">
-                <h1 className="text-3xl sm:text-4xl font-bold font-title">Settings</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Settings</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">
                     Manage your account settings, preferences, and security.
                 </p>
@@ -234,7 +234,7 @@ const SenderSetupContent: React.FC = () => {
     return (
         <div className="animate-fade-in max-w-3xl mx-auto">
             <div className="text-center mb-10">
-                <h1 className="text-3xl sm:text-4xl font-bold font-title">Sender Setup</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">Sender Setup</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary mt-2">Configure and verify the email address used to send campaigns.</p>
             </div>
 
@@ -265,7 +265,7 @@ const SenderSetupContent: React.FC = () => {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-light-border dark:border-brand-light/20">
-                    <h3 className="text-lg font-semibold mb-4">Verification Status</h3>
+                    <h3 className="text-lg font-semibold mb-4 dark:text-white">Verification Status</h3>
 
                     {status === 'unverified' && (
                         <div className="bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 p-4 rounded-lg flex flex-col items-center text-center">
@@ -394,20 +394,20 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
 
     return (
         <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold font-title mb-2">Email Settings</h1>
+            <h1 className="text-3xl font-bold font-title mb-2 dark:text-white">Email Settings</h1>
             <p className="text-light-text-secondary dark:text-brand-text-secondary mb-8">Define a consistent header and footer for all outgoing emails to maintain brand identity.</p>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-8">
                     <div>
-                        <label className="block text-xl font-bold font-title mb-4">Global Email Header</label>
+                        <label className="block text-xl font-bold font-title mb-4 dark:text-white">Global Email Header</label>
                         <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
                             <MenuBar editor={headerEditor} />
                             <EditorContent editor={headerEditor} className="w-full h-48 bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xl font-bold font-title mb-4">Global Email Footer</label>
+                        <label className="block text-xl font-bold font-title mb-4 dark:text-white">Global Email Footer</label>
                         <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
                             <MenuBar editor={footerEditor} />
                             <EditorContent editor={footerEditor} className="w-full h-48 bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
@@ -416,7 +416,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
                 </div>
 
                 <div className="space-y-6">
-                    <h2 className="text-xl font-bold font-title">Live Preview</h2>
+                    <h2 className="text-xl font-bold font-title dark:text-white">Live Preview</h2>
                     <div className="bg-light-surface dark:bg-brand-dark rounded-lg p-1 border border-light-border dark:border-brand-light/20">
                         <div className="bg-slate-100 dark:bg-brand-darker rounded-lg p-4 h-[420px] overflow-y-auto">
                            <div
@@ -508,7 +508,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
   
     return (
       <div className="animate-fade-in-fast">
-        <h2 className="text-xl font-bold font-title mb-2">Password & Security</h2>
+        <h2 className="text-xl font-bold font-title mb-2 dark:text-white">Password & Security</h2>
         <p className="text-light-text-secondary dark:text-brand-text-secondary mb-6">
           Update your password for enhanced security.
         </p>
@@ -578,7 +578,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
   
       return (
           <div className="animate-fade-in-fast">
-              <h2 className="text-xl font-bold font-title mb-6">Appearance</h2>
+              <h2 className="text-xl font-bold font-title mb-6 dark:text-white">Appearance</h2>
               <p className="text-light-text-secondary dark:text-brand-text-secondary mb-4">
                   Choose how Sudi looks and feels.
               </p>
@@ -642,7 +642,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
   
       return (
           <div className="animate-fade-in-fast">
-              <h2 className="text-xl font-bold font-title mb-6">Notifications</h2>
+              <h2 className="text-xl font-bold font-title mb-6 dark:text-white">Notifications</h2>
               <p className="text-light-text-secondary dark:text-brand-text-secondary mb-6">
                   Manage how we contact you.
               </p>
@@ -680,7 +680,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
   const NotificationToggle: React.FC<NotificationToggleProps> = ({ label, description, isEnabled, onToggle }) => (
       <div className="flex items-start justify-between p-4 rounded-lg border border-transparent hover:bg-light-hover dark:hover:bg-brand-light/10">
           <div className="pr-4">
-              <h3 className="font-semibold">{label}</h3>
+              <h3 className="font-semibold dark:text-white">{label}</h3>
               <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">{description}</p>
           </div>
           <button
@@ -730,7 +730,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
             <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-md p-8">
-              <h2 className="text-2xl font-bold mb-4 text-center font-title text-red-500">Confirm Deletion</h2>
+              <h2 className="text-2xl font-bold mb-4 text-center font-title text-red-500 dark:text-red-400">Confirm Deletion</h2>
               <p className="text-center text-light-text-secondary dark:text-brand-text-secondary mb-6">
                 This is a permanent action. All your data, including templates, history, and settings, will be lost forever.
               </p>

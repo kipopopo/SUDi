@@ -50,7 +50,7 @@ const Analytics: React.FC<AnalyticsProps> = () => {
         return (
              <div className="animate-fade-in text-center p-12 bg-light-surface dark:bg-brand-dark/50 rounded-lg border border-light-border dark:border-brand-light/20">
                 <ReportIcon className="w-16 h-16 mx-auto text-light-text-secondary dark:text-brand-text-secondary mb-4" />
-                <h1 className="text-2xl font-bold font-title">No Analytics Data Available</h1>
+                <h1 className="text-2xl font-bold font-title dark:text-white">No Analytics Data Available</h1>
                 <p className="text-light-text-secondary dark:text-brand-text-secondary mt-2">
                     Complete your first email campaign to see performance analytics here.
                 </p>
@@ -63,7 +63,7 @@ const Analytics: React.FC<AnalyticsProps> = () => {
     return (
         <div className="animate-fade-in space-y-8">
             <div>
-                <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title">Campaign Analytics</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title dark:text-white">Campaign Analytics</h1>
                 <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary">An overview of your email marketing performance.</p>
             </div>
 
@@ -76,7 +76,7 @@ const Analytics: React.FC<AnalyticsProps> = () => {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 {/* Top Campaigns */}
                 <div className="lg:col-span-5 bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 p-6 rounded-xl">
-                    <h2 className="text-xl font-bold font-title mb-4">Top Performing Campaigns</h2>
+                    <h2 className="text-xl font-bold font-title mb-4 dark:text-white">Top Performing Campaigns</h2>
                     <ul className="space-y-4">
                         {topCampaigns.map(campaign => (
                             <li key={campaign.id} className="border-b border-light-border dark:border-brand-light/20 pb-3 last:border-b-0 last:pb-0">

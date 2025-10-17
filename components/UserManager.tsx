@@ -25,7 +25,7 @@ const UserManager: React.FC<{ isSidebarCollapsed: boolean }> = ({ isSidebarColla
         <>
             <div className="animate-fade-in">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold font-title">Manage Users</h1>
+                    <h1 className="text-3xl font-bold font-title dark:text-white">Manage Users</h1>
                     <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:bg-opacity-90 transition">
                         <PlusIcon />
                         <span>Add User</span>

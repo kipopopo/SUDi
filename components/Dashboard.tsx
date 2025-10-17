@@ -136,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
   return (
     <div className="animate-fade-in">
         <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title">{`Welcome back, ${displayName}!`}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title dark:text-white">{`Welcome back, ${displayName}!`}</h1>
             <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary">Here's a snapshot of your system. Ready to engage your audience?</p>
         </div>
         
@@ -179,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
 
                 <div className="bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 p-6 rounded-xl">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold font-title">Recent Activity</h2>
+                        <h2 className="text-xl font-bold font-title dark:text-white">Recent Activity</h2>
                         <button onClick={() => navigate('/history')} className="text-sm font-semibold text-brand-accent-purple dark:text-brand-accent hover:underline">
                             View All
                         </button>
@@ -198,7 +198,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
 
             <div className="lg:col-span-1 space-y-6">
                  <div className="bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 p-6 rounded-xl">
-                    <h2 className="text-xl font-bold font-title mb-4">Quick Actions</h2>
+                    <h2 className="text-xl font-bold font-title mb-4 dark:text-white">Quick Actions</h2>
                     <div className="space-y-4">
                        <QuickActionButton
                           icon={<BlastIcon className="w-7 h-7" />}

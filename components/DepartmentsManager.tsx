@@ -28,7 +28,7 @@ const DepartmentsManager: React.FC<DepartmentsManagerProps> = ({ isSidebarCollap
     <>
       <div className="animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
-          <h1 className="text-3xl font-bold font-title">Manage Departments</h1>
+          <h1 className="text-3xl font-bold font-title dark:text-white">Manage Departments</h1>
           <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:bg-opacity-90 transition self-end md:self-auto">
             <PlusIcon />
             <span>Add Department</span>

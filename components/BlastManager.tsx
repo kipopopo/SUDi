@@ -152,7 +152,7 @@ const BlastManager: React.FC = () => {
     return (
         <>
             <div className="animate-fade-in">
-                <h1 className="text-3xl font-bold mb-8 text-center font-title">Create New Email Blast</h1>
+                <h1 className="text-3xl font-bold mb-8 text-center font-title dark:text-white">Create New Email Blast</h1>
 
                 {!isSenderVerified && (
                     <div className="max-w-4xl mx-auto mb-8 p-4 rounded-lg bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-500/30">
@@ -213,7 +213,7 @@ const BlastManager: React.FC = () => {
                     <div className="lg:col-span-3">
                        <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 rounded-lg h-full">
                             <div className="p-4 border-b border-light-border dark:border-brand-light/20">
-                                <h2 className="text-lg font-bold">Email Preview</h2>
+                                <h2 className="text-lg font-bold dark:text-white">Email Preview</h2>
                             </div>
                             <div className="p-4 bg-light-bg dark:bg-brand-light/30">
                                 <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">From: <strong className="text-light-text dark:text-white">{senderProfile?.name || '[Sender Name]'} &lt;{senderProfile?.email || '[sender@example.com]'}&gt;</strong></p>
@@ -223,7 +223,7 @@ const BlastManager: React.FC = () => {
                                 <div dangerouslySetInnerHTML={{ __html: renderPreviewBody() }} />
                                 {selectedTemplate?.ecardBackdropPath && generatedPdfPreview && (
                                     <div className="mt-6 pt-6 border-t border-light-border dark:border-brand-light/20">
-                                        <h3 className="text-md font-bold mb-2">E-card Attachment Preview</h3>
+                                        <h3 className="text-md font-bold mb-2 dark:text-white">E-card Attachment Preview</h3>
                                         <iframe src={generatedPdfPreview} width="100%" height="500px" title="E-card Attachment Preview" className="border border-light-border dark:border-brand-light/20 rounded-md"></iframe>
                                     </div>
                                 )}
