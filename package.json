@@ -10,11 +10,26 @@
   },
   "dependencies": {
     "@google/genai": "^1.21.0",
+    "@tiptap/extension-image": "^2.5.7",
+    "@tiptap/extension-link": "^2.5.7",
+    "@tiptap/extension-placeholder": "^2.5.7",
+    "@tiptap/extension-text-align": "^2.5.7",
+    "@tiptap/extension-underline": "^2.5.7",
+    "@tiptap/pm": "^2.5.7",
+    "@tiptap/react": "^2.5.7",
+    "@tiptap/starter-kit": "^2.5.7",
+    "axios": "^1.12.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-draggable": "^4.5.0",
+    "react-router-dom": "^6.25.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"

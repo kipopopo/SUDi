@@ -1,21 +1,16 @@
 
 import React from 'react';
 import { SunIcon, MoonIcon } from './Icons';
-
-interface ThemeToggleProps {
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
-}
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * A button component that allows the user to toggle between light and dark themes.
  * It displays a moon icon for switching to dark mode and a sun icon for switching to light mode.
- * @param {ThemeToggleProps} props - The props for the component.
- * @param {'light' | 'dark'} props.theme - The current theme.
- * @param {() => void} props.toggleTheme - The function to call to toggle the theme.
  * @returns {React.ReactElement} The rendered theme toggle button.
  */
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, toggleTheme }) => {
+export const ThemeToggle: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <button
       onClick={toggleTheme}

@@ -1,7 +1,11 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 // Find the root DOM element where the React application will be mounted.
 const rootElement = document.getElementById('root');
@@ -20,6 +24,16 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <DataProvider>
+            <SettingsProvider>
+              <App />
+            </SettingsProvider>
+          </DataProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );

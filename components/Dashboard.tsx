@@ -1,6 +1,6 @@
-
 import React from 'react';
-import { View, Department, Participant, EmailTemplate, BlastHistoryItem } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { BlastHistoryItem } from '../types';
 import { 
   ParticipantsIcon, 
   DepartmentsIcon, 
@@ -9,22 +9,12 @@ import {
   HistoryIcon,
   CheckCircleIcon,
   FailCircleIcon,
-  PlusIcon
 } from './common/Icons';
+import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 
-interface DashboardProps {
-  setCurrentView: (view: View) => void;
-  departments: Department[];
-  participants: Participant[];
-  templates: EmailTemplate[];
-  history: BlastHistoryItem[];
-}
+interface DashboardProps {}
 
-/**
- * A redesigned, standardized card component to display a key statistic.
- * @param {object} props - The props for the component.
- * @returns {React.ReactElement} The rendered statistic card component.
- */
 const StatCard: React.FC<{
   icon: React.ReactNode;
   value: string;
@@ -51,11 +41,6 @@ const StatCard: React.FC<{
   </button>
 );
 
-/**
- * A reusable button for the "Quick Actions" panel.
- * @param {object} props - The props for the component.
- * @returns {React.ReactElement} The rendered quick action button.
- */
 const QuickActionButton: React.FC<{
   icon: React.ReactNode;
   title: string;
@@ -76,11 +61,6 @@ const QuickActionButton: React.FC<{
     </button>
 );
 
-/**
- * Renders a single item for the "Recent Activity" feed.
- * @param {object} props - The props for the component.
- * @returns {React.ReactElement} The rendered activity item.
- */
 const ActivityItem: React.FC<{ item: BlastHistoryItem }> = ({ item }) => {
     const getStatusIcon = () => {
         const iconClass = "w-6 h-6";
@@ -139,41 +119,36 @@ const ActivityItem: React.FC<{ item: BlastHistoryItem }> = ({ item }) => {
     );
 };
 
-
-/**
- * Renders the completely redesigned dashboard view of the application.
- * It provides a comprehensive overview with statistics, recent activity, and quick actions.
- * @param {DashboardProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered dashboard component.
- */
-export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, departments, participants, templates, history }) => {
+const Dashboard: React.FC<DashboardProps> = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { departments, participants, templates, history } = useData();
   const completedCampaigns = history.filter(item => item.status === 'Completed').length;
   
-  // Sort history by date to get the most recent items for the activity feed.
   const recentActivities = history.slice().sort((a, b) => {
     const dateA = new Date(a.scheduledDate || a.sentDate || 0).getTime();
     const dateB = new Date(b.scheduledDate || b.sentDate || 0).getTime();
     return dateB - dateA;
   }).slice(0, 5);
 
+  const displayName = user?.firstName || user?.username || 'Admin';
+
   return (
     <div className="animate-fade-in">
         <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title">Welcome back, Admin!</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2 font-title">{`Welcome back, ${displayName}!`}</h1>
             <p className="text-base sm:text-lg text-light-text-secondary dark:text-brand-text-secondary">Here's a snapshot of your system. Ready to engage your audience?</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content Column */}
             <div className="lg:col-span-2 space-y-8">
-                {/* Stat Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <StatCard 
                       icon={<ParticipantsIcon className="w-8 h-8" />} 
                       value={String(participants.length)} 
                       title="Participants" 
                       description="Total managed contacts"
-                      onClick={() => setCurrentView('participants')}
+                      onClick={() => navigate('/participants')}
                       colorClass="bg-brand-accent-purple"
                     />
                     <StatCard 
@@ -181,7 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
                       title="Departments"
                       value={String(departments.length)} 
                       description="Organized contact groups" 
-                      onClick={() => setCurrentView('departments')}
+                      onClick={() => navigate('/departments')}
                       colorClass="bg-blue-500"
                     />
                     <StatCard 
@@ -189,7 +164,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
                       title="Templates"
                       value={String(templates.length)} 
                       description="Reusable email designs" 
-                      onClick={() => setCurrentView('templates')}
+                      onClick={() => navigate('/templates')}
                       colorClass="bg-green-500"
                     />
                     <StatCard 
@@ -197,16 +172,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
                       title="Campaigns Sent" 
                       value={String(completedCampaigns)} 
                       description="Completed email blasts"
-                      onClick={() => setCurrentView('history')}
+                      onClick={() => navigate('/history')}
                       colorClass="bg-brand-accent"
                     />
                 </div>
 
-                {/* Recent Activity */}
                 <div className="bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 p-6 rounded-xl">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold font-title">Recent Activity</h2>
-                        <button onClick={() => setCurrentView('history')} className="text-sm font-semibold text-brand-accent-purple dark:text-brand-accent hover:underline">
+                        <button onClick={() => navigate('/history')} className="text-sm font-semibold text-brand-accent-purple dark:text-brand-accent hover:underline">
                             View All
                         </button>
                     </div>
@@ -222,7 +196,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
                 </div>
             </div>
 
-            {/* Side Column */}
             <div className="lg:col-span-1 space-y-6">
                  <div className="bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 p-6 rounded-xl">
                     <h2 className="text-xl font-bold font-title mb-4">Quick Actions</h2>
@@ -231,19 +204,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
                           icon={<BlastIcon className="w-7 h-7" />}
                           title="Create New Blast"
                           description="Start a new email campaign"
-                          onClick={() => setCurrentView('blast')}
+                          onClick={() => navigate('/blast')}
                         />
                         <QuickActionButton
                           icon={<ParticipantsIcon className="w-7 h-7" />}
                           title="Add Participant"
                           description="Add a new contact manually"
-                          onClick={() => setCurrentView('participants')}
+                          onClick={() => navigate('/participants')}
                         />
                         <QuickActionButton
                           icon={<TemplatesIcon className="w-7 h-7" />}
                           title="New Template"
                           description="Design a new reusable email"
-                          onClick={() => setCurrentView('templates')}
+                          onClick={() => navigate('/templates')}
                         />
                     </div>
                  </div>
@@ -252,3 +225,5 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, department
     </div>
   );
 };
+
+export default Dashboard;

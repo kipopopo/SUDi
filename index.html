@@ -85,6 +85,54 @@
       html.dark {
         scrollbar-color: #1e293b #0f172a; /* thumb color, track color */
       }
+
+      .header-hidden {
+        transform: translateY(-100%);
+      }
+
+      /* Tiptap Editor Styles */
+      .ProseMirror {
+        padding: 0.75rem !important;
+        outline: none !important;
+        /* Sync with preview styles */
+        font-family: sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+      }
+
+      .ProseMirror > * + * {
+        margin-top: 0.75em;
+      }
+
+      .tiptap-wrapper .is-active {
+          background-color: #9333ea; /* brand-accent-purple */
+          color: white;
+      }
+
+      .tiptap-wrapper button {
+          padding: 0.25rem;
+          border-radius: 0.25rem;
+          transition: background-color 0.2s;
+      }
+
+      .tiptap-wrapper button:hover {
+          background-color: #e2e8f0; /* brand-text */
+      }
+
+      html.dark .tiptap-wrapper button:hover {
+          background-color: #1e293b; /* brand-light */
+      }
+
+      .tiptap-wrapper .divider {
+          width: 1px;
+          background-color: #cbd5e1; /* light-border */
+          margin: 0 0.5rem;
+          align-self: stretch;
+      }
+
+      html.dark .tiptap-wrapper .divider {
+          background-color: #1e293b; /* brand-light */
+      }
     </style>
      <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
      <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,6 +147,20 @@
       }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react/jsx-runtime": "https://aistudiocdn.com/react@^19.1.1/jsx-runtime.js",
+    "react/jsx-dev-runtime": "https://aistudiocdn.com/react@^19.1.1/jsx-dev-runtime.js",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.1.1/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>

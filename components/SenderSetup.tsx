@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { SenderProfile } from '../types';
 import { CheckCircleIcon, HistoryIcon, LoadingIcon, MailIcon } from './common/Icons';
+import { useSettings } from '../contexts/SettingsContext';
 
-interface SenderSetupProps {
-    senderProfile: SenderProfile | null;
-    setSenderProfile: (profile: SenderProfile | null) => void;
-}
+interface SenderSetupProps {}
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified';
 
-export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSenderProfile }) => {
+const SenderSetup: React.FC<SenderSetupProps> = () => {
+    const { senderProfile, setSenderProfile } = useSettings();
     const [name, setName] = useState(senderProfile?.name || '');
     const [email, setEmail] = useState(senderProfile?.email || '');
     const [originalEmail, setOriginalEmail] = useState(senderProfile?.email || '');
@@ -20,7 +20,6 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        // If the profile from props changes, update the local state.
         setName(senderProfile?.name || '');
         setEmail(senderProfile?.email || '');
         setOriginalEmail(senderProfile?.email || '');
@@ -29,7 +28,6 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
-        // If the user changes the email, verification is needed.
         if (e.target.value.toLowerCase() !== originalEmail.toLowerCase()) {
             setStatus('unverified');
             setVerificationCode('');
@@ -39,7 +37,7 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
         }
     };
 
-    const handleSendCode = () => {
+    const handleSendCode = async () => {
         setError('');
         if (!name.trim() || !email.trim()) {
             setError('Sender Name and Email cannot be empty.');
@@ -51,14 +49,17 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
         }
         
         setIsLoading(true);
-        // Simulate sending a verification code
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await axios.post('/api/send-verification-code', { email });
             setStatus('pending');
-        }, 1500);
+        } catch (err) {
+            setError('Failed to send verification code. Please try again later.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleVerifyCode = () => {
+    const handleVerifyCode = async () => {
         setError('');
         if (verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
              setError('Please enter a valid 6-digit verification code.');
@@ -66,14 +67,17 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
         }
 
         setIsLoading(true);
-        // Simulate verifying the code. For this demo, any 6-digit code is accepted.
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await axios.post('/api/verify-code', { email, code: verificationCode });
             const newProfile: SenderProfile = { name: name.trim(), email: email.trim(), verified: true };
             setSenderProfile(newProfile);
             setOriginalEmail(email);
             setStatus('verified');
-        }, 1000);
+        } catch (err) {
+            setError('Invalid verification code.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const isDirty = name !== (senderProfile?.name || '') || email !== (senderProfile?.email || '');
@@ -173,5 +177,4 @@ export const SenderSetup: React.FC<SenderSetupProps> = ({ senderProfile, setSend
 
             </div>
         </div>
-    );
 };

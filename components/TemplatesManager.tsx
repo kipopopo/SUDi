@@ -1,28 +1,101 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { EmailTemplate, AppSettings, AiUsage, SenderProfile } from '../types';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
+
+import { EmailTemplate, AiUsage } from '../types';
 import { generateEmailContentStream, generateEmailSubject, improveWriting } from '../services/geminiService';
 import { EditIcon, DeleteIcon, PlusIcon, AIIcon, LoadingIcon, AlignLeftIcon, AlignCenterIcon, AlignRightIcon, ImageIcon, DuplicateIcon, FolderIcon, LinkIcon, ListUnorderedIcon, ListOrderedIcon, QuoteIcon, HorizontalRuleIcon, ButtonIcon, SparklesIcon, BlastIcon } from './common/Icons';
+import { addTemplate, updateTemplate, deleteTemplate } from '../services/templateService';
+import { generateEcardPdf } from '../utils/ecardGenerator';
+import { useData } from '../contexts/DataContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { DeleteTemplateModal } from './TemplateModals';
+import Draggable from 'react-draggable';
+
+const MenuBar = ({ editor, placeholders }: { editor: any, placeholders: string[] }) => {
+    if (!editor) {
+        return null;
+    }
+
+    const setLink = useCallback(() => {
+        const previousUrl = editor.getAttributes('link').href;
+        const url = window.prompt('URL', previousUrl);
+
+        if (url === null) return;
+        if (url === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            return;
+        }
+        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }, [editor]);
+
+    const addImage = useCallback(() => {
+        const url = window.prompt('URL');
+        if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+        }
+    }, [editor]);
+
+    const handlePlaceholder = (value: string) => {
+        if (value) {
+            editor.chain().focus().insertContent(value).run();
+        }
+    };
+
+    return (
+        <div className="tiptap-wrapper flex flex-wrap items-center gap-1 p-2 border border-light-border dark:border-brand-light/20 border-b-0 rounded-t-md bg-light-surface dark:bg-brand-dark">
+            <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}><b>B</b></button>
+            <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'is-active' : ''}><i>I</i></button>
+            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? 'is-active' : ''}><u>U</u></button>
+            <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'is-active' : ''}><s>S</s></button>
+            <button onClick={() => {
+
+
+                editor.chain().focus().undo().run();
+            }} disabled={!editor.can().undo()}>Undo</button>
+            <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>Redo</button>
+            <div className="divider"></div>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}>H1</button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}>H2</button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive('heading', { level: 3 }) ? 'is-active' : ''}>H3</button>
+            <div className="divider"></div>
+            <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}><ListUnorderedIcon /></button>
+            <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}><ListOrderedIcon /></button>
+            <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={editor.isActive('blockquote') ? 'is-active' : ''}><QuoteIcon /></button>
+            <div className="divider"></div>
+            <button onClick={() => editor.chain().focus().setTextAlign('left').run()} className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}><AlignLeftIcon /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('center').run()} className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}><AlignCenterIcon /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('right').run()} className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}><AlignRightIcon /></button>
+            <div className="divider"></div>
+            <button onClick={setLink} className={editor.isActive('link') ? 'is-active' : ''}><LinkIcon /></button>
+            <button onClick={addImage}><ImageIcon /></button>
+            <button onClick={() => editor.chain().focus().setHorizontalRule().run()}><HorizontalRuleIcon /></button>
+            <div className="divider"></div>
+            <select onChange={(e) => handlePlaceholder(e.target.value)} className="bg-light-bg dark:bg-brand-light/50 p-1 rounded-md border border-light-border dark:border-brand-light text-sm">
+                <option value="">Insert Placeholder</option>
+                {placeholders.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+        </div>
+    );
+};
+
 
 interface TemplatesManagerProps {
-  templates: EmailTemplate[];
-  setTemplates: React.Dispatch<React.SetStateAction<EmailTemplate[]>>;
-  settings: AppSettings;
-  senderProfile: SenderProfile | null;
   isSubscribed: boolean;
   aiUsage: AiUsage;
   refreshAiUsage: () => void;
   promptSubscription: () => void;
+  isSidebarCollapsed: boolean;
 }
 
-/**
- * Renders the email templates management view.
- * This component allows users to create, view, edit, and delete email templates.
- * It also features an AI content generator to help write email bodies and subjects.
- * It receives template data and update functions via props to interact with the centralized state.
- * @param {TemplatesManagerProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered templates manager component.
- */
-export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, setTemplates, settings, senderProfile, isSubscribed, aiUsage, refreshAiUsage, promptSubscription }) => {
+const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsage, refreshAiUsage, promptSubscription, isSidebarCollapsed }) => {
+  const { templates, setTemplates } = useData();
+  const { userSettings, globalSettings, senderProfile } = useSettings();
   const [prompt, setPrompt] = useState('');
   const [tone, setTone] = useState<string>('Professional');
   const [generatedBody, setGeneratedBody] = useState('');
@@ -31,19 +104,97 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
   const [error, setError] = useState<string | null>(null);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState<EmailTemplate | null>(null);
+  const [currentTemplate, setCurrentTemplate] = useState<Partial<EmailTemplate>>({});
+  const [livePreviewBody, setLivePreviewBody] = useState('');
   const [editorError, setEditorError] = useState<string | null>(null);
   const [subjectError, setSubjectError] = useState<string | null>(null);
-  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [isGeneratingSubject, setIsGeneratingSubject] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [ecardBackdrop, setEcardBackdrop] = useState<File | null>(null);
+  const [ecardBackdropPreview, setEcardBackdropPreview] = useState<string | null>(null);
   
-  // New state for advanced editor features
-  const [isImprovingText, setIsImprovingText] = useState(false);
   const [testEmail, setTestEmail] = useState('');
+  const [generatedPdfPreview, setGeneratedPdfPreview] = useState<string | null>(null);
+
+  const stageRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
+  const roleRef = useRef<HTMLDivElement>(null);
 
   const isAiDisabled = !isSubscribed && aiUsage.isExceeded;
+
+  const placeholders = useMemo(() => ['{name}', '{email}', '{role}', '{paEmail}'], []);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit, Underline, Link.configure({ openOnClick: false, autolink: true }), Image,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({ placeholder: 'Enter your email body here...' })
+    ],
+    content: '',
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEcardBackdrop(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEcardBackdropPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Listener for updating the live preview
+  useEffect(() => {
+    if (!editor) return;
+    const updatePreview = () => setLivePreviewBody(editor.getHTML());
+    editor.on('update', updatePreview);
+    return () => { editor.off('update', updatePreview); };
+  }, [editor]);
+
+  // Load content into editor when a template is opened
+  useEffect(() => {
+    if (isEditorOpen && editor && !editor.isDestroyed) {
+        editor.commands.clearContent();
+        editor.commands.setContent(currentTemplate.body || '', false);
+        setLivePreviewBody(currentTemplate.body || '');
+    } else if (!isEditorOpen) {
+        editor?.commands.clearContent();
+    }
+  }, [isEditorOpen, currentTemplate.id, currentTemplate.body, editor]);
+
+  // Load e-card backdrop when editing an existing template
+  useEffect(() => {
+
+    const loadEcardBackdrop = async () => {
+      if (isEditorOpen && currentTemplate.ecardBackdropPath) {
+        try {
+          const filename = currentTemplate.ecardBackdropPath.split('/').pop();
+          const response = await fetch(`/api/ecard-backdrop/${filename}`);
+          if (!response.ok) throw new Error('Failed to fetch backdrop image');
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = () => {
+            setEcardBackdropPreview(reader.result as string);
+          };
+        } catch (error) {
+  
+          setEcardBackdropPreview(null);
+        }
+      } else if (!isEditorOpen) {
+        setEcardBackdropPreview(null);
+      } else if (isEditorOpen && !currentTemplate.ecardBackdropPath) {
+        setEcardBackdropPreview(null);
+      }
+    };
+    loadEcardBackdrop();
+  }, [isEditorOpen, currentTemplate.id, currentTemplate.ecardBackdropPath]);
+
 
   const categories = useMemo<string[]>(() => {
     const uniqueCategories = new Set(templates.map(t => t.category || 'Uncategorized'));
@@ -67,11 +218,6 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
   }, [templates, selectedCategory]);
 
 
-  /**
-   * Handles the AI content generation request.
-   * It calls the `generateEmailContent` service with the user's prompt and updates the state
-   * with the generated body, loading status, and any errors.
-   */
   const handleGenerate = async () => {
     if (!prompt) return;
 
@@ -86,19 +232,16 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
     setThinkingText(null);
 
     try {
-      // The `thinking` property on a streamed chunk contains progress information.
-      // We can display this to the user for a better experience.
-      await generateEmailContentStream(prompt, tone, (chunk) => {
-        // @ts-ignore - The `thinking` property exists on the stream response but may not be in all type versions.
-        if (chunk.thinking?.toolCode) {
-          // @ts-ignore
-          setThinkingText(chunk.thinking.toolCode);
+      await generateEmailContentStream(prompt, tone, placeholders, (chunk) => {
+        const c = chunk as any;
+        if (c.thinking?.toolCode) {
+          setThinkingText(c.thinking.toolCode);
         }
-        if (chunk.text) {
+        if (c.text) {
           if (thinkingText) {
-              setThinkingText(null); // Clear thinking text when content arrives
+              setThinkingText(null);
           }
-          setGeneratedBody((prev) => prev + chunk.text);
+          setGeneratedBody((prev) => prev + c.text);
         }
       });
       refreshAiUsage();
@@ -110,39 +253,46 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
     }
   };
 
-  /**
-   * Opens the template editor modal to create a new template.
-   * It initializes a new, empty template object and sets it as the current template.
-   */
   const handleAddNewTemplate = () => {
     setCurrentTemplate({
       id: `t${Date.now()}`,
       name: '',
       subject: '',
-      body: 'Hello {name},\n\n',
-      category: ''
+      body: `<p>Hello {name},</p><p></p><p>Regards,</p><p><strong>Your Name</strong></p>`,
+      category: '',
+      nameX: 0,
+      nameY: 0,
+      nameFontSize: 48,
+      nameColor: '#000000',
+      roleX: 0,
+      roleY: 0,
+      roleFontSize: 36,
+      roleColor: '#000000',
+    });
+    setEcardBackdrop(null);
+    setEcardBackdropPreview(null);
+    setIsEditorOpen(true);
+  };
+
+  const handleEditTemplate = (template: EmailTemplate) => {
+
+    setCurrentTemplate({
+      ...template,
+      nameX: template.nameX ?? 0,
+      nameY: template.nameY ?? 0,
+      nameFontSize: template.nameFontSize ?? 48,
+      nameColor: template.nameColor ?? '#000000',
+      roleX: template.roleX ?? 0,
+      roleY: template.roleY ?? 0,
+      roleFontSize: template.roleFontSize ?? 36,
+      roleColor: template.roleColor ?? '#000000',
     });
     setIsEditorOpen(true);
   };
 
-  /**
-   * Opens the template editor modal to edit an existing template.
-   * @param {EmailTemplate} template - The template object to be edited.
-   */
-  const handleEditTemplate = (template: EmailTemplate) => {
-    setCurrentTemplate({ ...template });
-    setIsEditorOpen(true);
-  };
-
-  /**
-   * Creates a copy of an existing template and opens it in the editor.
-   * It generates a new unique name for the copied template.
-   * @param {EmailTemplate} templateToDuplicate - The template to be duplicated.
-   */
   const handleDuplicateTemplate = (templateToDuplicate: EmailTemplate) => {
     let newName = `${templateToDuplicate.name} - Copy`;
     let counter = 2;
-    // Ensure the new name is unique
     while (templates.some(t => t.name.toLowerCase() === newName.toLowerCase())) {
         newName = `${templateToDuplicate.name} - Copy (${counter})`;
         counter++;
@@ -155,13 +305,10 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
     };
 
     setCurrentTemplate(newTemplate);
+    setEcardBackdrop(null);
     setIsEditorOpen(true);
   };
 
-  /**
-   * Saves the AI-generated email body as a new template.
-   * It opens the template editor modal with the generated content pre-filled.
-   */
   const handleSaveGeneratedTemplate = () => {
     if (!generatedBody) return;
     setCurrentTemplate({
@@ -171,33 +318,77 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
       body: generatedBody,
       category: 'AI Generated',
     });
+    setEcardBackdrop(null);
     setIsEditorOpen(true);
     setGeneratedBody('');
   };
 
-  /**
-   * Closes the template editor modal and resets its state.
-   */
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
-    setCurrentTemplate(null);
-    setEditorError(null);
-    setSubjectError(null);
-    setTestEmail('');
   };
 
-  /**
-   * Saves the current template (either new or edited) to the main templates list
-   * by calling the `setTemplates` function from props.
-   * It performs validation to ensure the name and subject are not empty and the name is unique.
-   */
-  const handleSaveTemplate = () => {
-    if (!currentTemplate) return;
+  const handleGeneratePdfPreview = async () => {
+
+    if (!ecardBackdrop) {
+      setEditorError('Please upload an e-card backdrop image first.');
+      return;
+    }
+
+
+    setEditorError(null);
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(ecardBackdrop);
+      reader.onload = async () => {
+        const backdropImageUrl = reader.result as string;
+        const stage = stageRef.current;
+        if (!stage) return;
+
+        const pdfParams = {
+            name: 'John Doe',
+            role: 'Software Engineer',
+            backdropImageUrl: backdropImageUrl,
+            nameX: currentTemplate.nameX,
+            nameY: stage.offsetHeight - (currentTemplate.nameY || 0) - (nameRef.current?.offsetHeight || 0),
+            nameFontSize: currentTemplate.nameFontSize,
+            nameColor: currentTemplate.nameColor,
+            roleX: currentTemplate.roleX,
+            roleY: stage.offsetHeight - (currentTemplate.roleY || 0) - (roleRef.current?.offsetHeight || 0),
+            roleFontSize: currentTemplate.roleFontSize,
+            roleColor: currentTemplate.roleColor,
+        };
+
+        const pdfDataUri = await generateEcardPdf(pdfParams);
+        
+        // Create a Blob from the data URI and then a URL for the iframe
+        const byteCharacters = atob(pdfDataUri.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        setGeneratedPdfPreview(blobUrl);
+        alert('E-card PDF generated successfully!'); // Notification for PDF generation
+      };
+      reader.onerror = (error) => {
+  
+        setEditorError('Failed to read e-card backdrop file.');
+      };
+    } catch (error) {
+
+      setEditorError('Failed to generate PDF preview.');
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!currentTemplate.name || !currentTemplate.subject || !editor) return;
 
     setEditorError(null);
     setSubjectError(null);
 
-    // Validation
     if (!currentTemplate.name.trim() || !currentTemplate.subject.trim()) {
       setEditorError('Template Name and Subject cannot be empty.');
       return;
@@ -211,174 +402,90 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
         setEditorError('A template with this name already exists. Please choose a unique name.');
         return;
     }
+
+    let uploadedEcardBackdropPath: string | undefined;
+
+    if (ecardBackdrop) {
+      const formData = new FormData();
+      formData.append('ecardBackdrop', ecardBackdrop);
+
+      try {
+        const response = await fetch('/api/upload-ecard-backdrop', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        uploadedEcardBackdropPath = data.filePath;
+
+      } catch (error) {
+
+        setEditorError('Failed to upload e-card backdrop.');
+        return;
+      }
+    }
     
-    const templateToSave = {
-      ...currentTemplate,
-      category: currentTemplate.category?.trim() ?? ''
+    const templateToSave: EmailTemplate = {
+      id: currentTemplate.id || `t${Date.now()}`,
+      name: currentTemplate.name.trim(),
+      subject: currentTemplate.subject.trim(),
+      body: editor.getHTML(),
+      category: currentTemplate.category?.trim() ?? '',
+      ecardBackdropPath: uploadedEcardBackdropPath || currentTemplate.ecardBackdropPath,
+      nameX: currentTemplate.nameX,
+      nameY: currentTemplate.nameY,
+      nameFontSize: currentTemplate.nameFontSize,
+      nameColor: currentTemplate.nameColor,
+      roleX: currentTemplate.roleX,
+      roleY: currentTemplate.roleY,
+      roleFontSize: currentTemplate.roleFontSize,
+      roleColor: currentTemplate.roleColor,
     }
 
-    // ================================================================
-    // NOTE FOR DEPLOYMENT OUTSIDE GOOGLE AI STUDIO
-    // ================================================================
-    // This `setTemplates` call directly manipulates client-side state.
-    // In a real application, this logic would be replaced with API calls
-    // to your backend to either create or update a template in the database.
-    // ================================================================
-    setTemplates(prev => {
-      const exists = prev.some(t => t.id === templateToSave.id);
+
+
+
+    try {
+      const exists = templates.some(t => t.id === templateToSave.id);
       if (exists) {
-        // Update existing template
-        return prev.map(t => t.id === templateToSave.id ? templateToSave : t);
+        const updatedTemplate = await updateTemplate(templateToSave);
+
+
+        setTemplates(prev => prev.map(t => t.id === updatedTemplate.id ? updatedTemplate : t));
+        setCurrentTemplate(updatedTemplate); // Update currentTemplate with the latest data
+
       } else {
-        // Add new template
-        return [...prev, templateToSave];
+        const newTemplate = await addTemplate(templateToSave);
+
+
+        setTemplates(prev => [...prev, newTemplate]);
+        setCurrentTemplate(newTemplate); // Update currentTemplate with the latest data
+
       }
-    });
-    handleCloseEditor();
+      setIsEditorOpen(false);
+      setEditorError(null);
+      setSubjectError(null);
+      setTestEmail('');
+      setEcardBackdrop(null);
+      setEcardBackdropPreview(null);
+      alert('Template saved successfully!'); // Notification for template saving
+    } catch (error) {
+      setEditorError('Failed to save template.');
+    }
   };
   
-  /**
-   * Handles changes to the input fields within the template editor modal.
-   * It updates the `currentTemplate` state with the new values.
-   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - The input change event.
-   */
-  const handleTemplateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    if (!currentTemplate) return;
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setEditorError(null);
     if (e.target.name === 'subject') {
       setSubjectError(null);
     }
-    setCurrentTemplate({
-      ...currentTemplate,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    const isNumeric = ['nameX', 'nameY', 'nameFontSize', 'roleX', 'roleY', 'roleFontSize'].includes(name);
+
+    setCurrentTemplate(prev => ({...prev, [name]: isNumeric ? parseFloat(value) || 0 : value}));
   };
 
-  /**
-   * A helper function to wrap selected text in the textarea with tags.
-   * @param {string} openTag - The opening tag (e.g., '<strong>').
-   * @param {string} closeTag - The closing tag (e.g., '</strong>').
-   * @param {boolean} isBlock - Whether the tag is a block-level element.
-   */
-  const wrapText = (openTag: string, closeTag: string, isBlock = false) => {
-    if (!currentTemplate || !bodyTextareaRef.current) return;
-    const textarea = bodyTextareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-
-    let newText;
-    if (isBlock && selectedText) {
-        newText = `${openTag}\n${selectedText}\n${closeTag}`;
-    } else if (isBlock && !selectedText) {
-        newText = `${openTag}\n\n${closeTag}`;
-    } else {
-        newText = openTag + selectedText + closeTag;
-    }
-
-    const updatedBody =
-      textarea.value.substring(0, start) +
-      newText +
-      textarea.value.substring(end);
-
-    setCurrentTemplate(prev => (prev ? { ...prev, body: updatedBody } : null));
-
-    requestAnimationFrame(() => {
-      textarea.focus();
-      if (selectedText) {
-        textarea.setSelectionRange(start, end + openTag.length + closeTag.length + (isBlock ? 2 : 0));
-      } else {
-        textarea.setSelectionRange(start + openTag.length + (isBlock ? 1 : 0), start + openTag.length + (isBlock ? 1 : 0));
-      }
-    });
-  };
-  
-  /**
-   * A helper function to insert text at the current cursor position.
-   * @param {string} textToInsert - The text to insert.
-   */
-  const insertText = (textToInsert: string) => {
-    if (!currentTemplate || !bodyTextareaRef.current) return;
-    const textarea = bodyTextareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const newText = text.substring(0, start) + textToInsert + text.substring(end);
-    
-    setCurrentTemplate(prev => prev ? { ...prev, body: newText } : null);
-
-    requestAnimationFrame(() => {
-        textarea.focus();
-        textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
-    });
-  };
-
-
-  const handleInsertPlaceholder = (placeholder: string) => {
-    if (placeholder) {
-      insertText(placeholder);
-    }
-  };
-  
-  const handleInsertLink = () => {
-    const url = window.prompt("Enter the URL:");
-    if (url) {
-        wrapText(`<a href="${url}" target="_blank">`, '</a>');
-    }
-  };
-
-  const handleInsertList = (type: 'ul' | 'ol') => {
-    if (!bodyTextareaRef.current) return;
-    const textarea = bodyTextareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    
-    if (selectedText) {
-        const listItems = selectedText.split('\n').map(line => `  <li>${line}</li>`).join('\n');
-        const list = `\n<${type}>\n${listItems}\n</${type}>\n`;
-        insertText(list);
-    } else {
-        const placeholderList = `\n<${type}>\n  <li>First item</li>\n  <li>Second item</li>\n</${type}>\n`;
-        insertText(placeholderList);
-    }
-  };
-  
-  // FIX: The `prompt` state variable was shadowing `window.prompt`.
-  // This function correctly uses `window.prompt` and checks for a valid URL.
-  const handleInsertImage = () => {
-    const url = window.prompt("Enter image URL");
-    if (url) {
-      insertText(`<img src="${url}" alt="" style="max-width: 100%; height: auto;" />`);
-    }
-  };
-
-  const handleInsertButton = () => {
-    const url = window.prompt("Enter the button's destination URL:");
-    if (!url) return;
-    const buttonText = window.prompt("Enter the button text:", "Click Here");
-    if (!buttonText) return;
-
-    const buttonHtml = `
-<table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
-  <tr>
-    <td align="center" bgcolor="#f97316" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#f97316;" valign="middle">
-      <a href="${url}" style="display:inline-block;background:#f97316;color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank">
-        ${buttonText}
-      </a>
-    </td>
-  </tr>
-</table>`;
-    insertText(buttonHtml);
-  };
-
-  /**
-   * Handles the AI subject generation request.
-   * It calls the `generateEmailSubject` service with the current template's name and body,
-   * then updates the subject field with the AI's response.
-   */
   const handleGenerateSubject = async () => {
-    if (!currentTemplate || !currentTemplate.body.trim()) return;
+    if (!editor || editor.isEmpty) return;
 
     if (isAiDisabled) {
         promptSubscription();
@@ -389,95 +496,130 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
     setEditorError(null);
     setSubjectError(null);
     try {
-        const subject = await generateEmailSubject(currentTemplate.name, currentTemplate.body);
-        setCurrentTemplate({
-            ...currentTemplate,
-            subject: subject.trim().replace(/^"|"$/g, '') // Remove quotes from response
-        });
+        const subject = await generateEmailSubject(currentTemplate.name || 'New Template', editor.getText(), placeholders);
+        setCurrentTemplate(prev => ({...prev, subject: subject.trim().replace(/^"|"$/g, '')}));
         refreshAiUsage();
     } catch (err: any) {
         setSubjectError(err.message || 'Failed to generate subject.');
-    } finally {
-        setIsGeneratingSubject(false);
     }
   };
 
-  /**
-   * Uses AI to improve the selected text in the email body.
-   */
-  const handleImproveText = async () => {
-    if (!currentTemplate || !bodyTextareaRef.current) return;
+  const handleDeleteClick = (template: EmailTemplate) => {
+    setTemplateToDelete(template);
+    setIsDeleteModalOpen(true);
+  };
 
-    if (isAiDisabled) {
-        promptSubscription();
-        return;
-    }
+  const confirmDeleteTemplate = useCallback(async () => {
+    if (!templateToDelete) return;
 
-    const textarea = bodyTextareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-
-    if (!selectedText) {
-        alert('Please select the text you want to improve.');
-        return;
-    }
-
-    setIsImprovingText(true);
-    setEditorError(null);
     try {
-        const improvedText = await improveWriting(selectedText);
-        const updatedBody = textarea.value.substring(0, start) + improvedText + textarea.value.substring(end);
-        setCurrentTemplate(prev => prev ? { ...prev, body: updatedBody } : null);
-
-        requestAnimationFrame(() => {
-            textarea.focus();
-            textarea.setSelectionRange(start, start + improvedText.length);
-        });
-        refreshAiUsage();
-    } catch (err: any) {
-        setEditorError(err.message || 'Failed to improve text.');
-    } finally {
-        setIsImprovingText(false);
+      await deleteTemplate(templateToDelete.id);
+      setDeletingId(templateToDelete.id);
+      setTimeout(() => {
+        setTemplates(prev => prev.filter(t => t.id !== templateToDelete.id));
+        setDeletingId(null);
+        setIsDeleteModalOpen(false);
+        setTemplateToDelete(null);
+      }, 300);
+    } catch (error) {
+      alert('Failed to delete template.');
     }
-  };
-
-
-  /**
-   * Handles the deletion of a template.
-   * It shows a confirmation dialog, then sets the deleting state to trigger a fade-out animation,
-   * and finally removes the template from the state after the animation completes.
-   * @param {string} id - The ID of the template to delete.
-   */
-  const handleDeleteTemplate = useCallback((id: string) => {
-    if (window.confirm('Are you sure you want to delete this template?')) {
-        setDeletingId(id);
-        setTimeout(() => {
-            setTemplates(prev => prev.filter(t => t.id !== id));
-            setDeletingId(null);
-        }, 300);
-    }
-  }, [setTemplates]);
-
-  const placeholders = ['{name}', '{email}', '{role}', '{paEmail}'];
+  }, [templateToDelete, setTemplates]);
 
   const renderPreviewBody = () => {
     if (!currentTemplate) return '';
-    let body = currentTemplate.body
+    let body = livePreviewBody
         .replace(/{name}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">name</span>')
         .replace(/{email}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">email</span>')
         .replace(/{role}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">role</span>')
         .replace(/{paEmail}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">paEmail</span>');
     
-    const fullContent = `${settings.globalHeader} ${body} ${settings.globalFooter}`;
+  const header = globalSettings?.globalHeader ?? '';
+  const footer = globalSettings?.globalFooter ?? '';
+  const fullContent = `${header} ${body} ${footer}`;
 
-    return `<div class="prose prose-sm dark:prose-invert max-w-none text-light-text dark:text-brand-text">${fullContent}</div>`;
+        return `<div style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"> ${fullContent} </div>`;
   }
+
+  const renderTemplates = () => {
+    if (Object.keys(groupedTemplates).length > 0) {
+      return (
+        <>
+          {Object.entries(groupedTemplates)
+            .sort(([catA], [catB]) => catA.localeCompare(catB))
+            .map(([category, templatesInCategory]) => (
+              <div key={category}>
+                <h2 className="text-lg font-semibold mb-3 pb-2 border-b border-light-border dark:border-brand-light/20 text-light-text-secondary dark:text-brand-text-secondary flex items-center space-x-2">
+                  <FolderIcon />
+                  <span>{category}</span>
+                </h2>
+                <div className="space-y-4">
+                  {templatesInCategory.map((template) => (
+                    <div
+                      key={template.id}
+                      className={`bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-4 rounded-lg transition-opacity duration-300 ${ 
+                        deletingId === template.id ? 'opacity-0' : ''
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-lg">{template.name}</h3>
+                          <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary truncate max-w-[200px] sm:max-w-full">
+                            {template.subject}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-0 sm:space-x-2 flex-shrink-0 ml-4">
+                          <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary flex items-center space-x-1">
+                            <span>E-card:</span>
+                            <span className={`w-2.5 h-2.5 rounded-full ${template.ecardBackdropPath ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          </p>
+                          <button
+                            onClick={() => handleDuplicateTemplate(template)}
+                            title="Duplicate"
+                            className="p-2 text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition"
+                          >
+                            <DuplicateIcon />
+                          </button>
+                          <button
+                            onClick={() => handleEditTemplate(template)}
+                            title="Edit"
+                            className="p-2 text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(template)}
+                            title="Delete"
+                            className="p-2 text-light-text-secondary hover:text-red-500 dark:text-brand-text-secondary dark:hover:text-red-500 transition"
+                          >
+                            <DeleteIcon />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+        </>
+      );
+    }
+    else {
+      return (
+        <div className="text-center p-12 text-light-text-secondary dark:text-brand-text-secondary bg-light-surface dark:bg-brand-dark/50 rounded-lg border border-light-border dark:border-brand-light/20">
+          <p>
+            {templates.length === 0
+              ? 'No templates created yet. Click "New Template" to start.'
+              : 'No templates found in this category.'}
+          </p>
+        </div>
+      );
+    }
+  };
 
   return (
     <>
       <div className="animate-fade-in grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* AI Content Generator Panel */}
         <div className="lg:col-span-1 flex flex-col space-y-8">
           <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-6 rounded-lg">
             <h2 className="text-xl font-bold mb-4 flex items-center space-x-2"><AIIcon /> <span>Penjana Kandungan AI</span></h2>
@@ -491,12 +633,12 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
                     id="tone-select"
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
-                    className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
+                    className="w-full bg-light-bg dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
                 >
-                    <option>Professional</option>
-                    <option>Formal</option>
-                    <option>Casual</option>
-                    <option>Friendly</option>
+                    <option className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">Professional</option>
+                    <option className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">Formal</option>
+                    <option className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">Casual</option>
+                    <option className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">Friendly</option>
                 </select>
             </div>
             
@@ -546,7 +688,6 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
           )}
         </div>
 
-        {/* Templates List Panel */}
         <div className="lg:col-span-2">
           <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
             <h1 className="text-3xl font-bold font-title">Email Templates</h1>
@@ -554,141 +695,186 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
               <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-light-surface dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm"
+                  className="w-full bg-light-surface dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
               >
                   {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
+                      <option key={cat} value={cat} className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">{cat === 'all' ? 'All Categories' : cat}</option>
                   ))}
               </select>
-              <button onClick={handleAddNewTemplate} className="bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
+              <button onClick={handleAddNewTemplate} className="flex-shrink-0 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
                 <PlusIcon />
                 <span>New Template</span>
               </button>
             </div>
           </div>
           <div className="space-y-6">
-            {Object.keys(groupedTemplates).length > 0 ? (
-                Object.entries(groupedTemplates).sort(([catA], [catB]) => catA.localeCompare(catB)).map(([category, templatesInCategory]) => (
-                  <div key={category}>
-                    <h2 className="text-lg font-semibold mb-3 pb-2 border-b border-light-border dark:border-brand-light/20 text-light-text-secondary dark:text-brand-text-secondary flex items-center space-x-2">
-                        <FolderIcon /> 
-                        <span>{category}</span>
-                    </h2>
-                    <div className="space-y-4">
-                        {templatesInCategory.map((template) => (
-                        <div key={template.id} className={`bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-4 rounded-lg transition-opacity duration-300 ${deletingId === template.id ? 'opacity-0' : ''}`}>
-                            <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="font-bold text-lg">{template.name}</h3>
-                                <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary truncate max-w-[200px] sm:max-w-full">{template.subject}</p>
-                            </div>
-                            <div className="flex items-center space-x-0 sm:space-x-2 flex-shrink-0 ml-4">
-                                <button onClick={() => handleDuplicateTemplate(template)} title="Duplicate" className="p-2 text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition"><DuplicateIcon /></button>
-                                <button onClick={() => handleEditTemplate(template)} title="Edit" className="p-2 text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition"><EditIcon /></button>
-                                <button onClick={() => handleDeleteTemplate(template.id)} title="Delete" className="p-2 text-light-text-secondary hover:text-red-500 dark:text-brand-text-secondary dark:hover:text-red-500 transition"><DeleteIcon /></button>
-                            </div>
-                            </div>
-                        </div>
-                        ))}
-                    </div>
-                  </div>
-                ))
-            ) : (
-                <div className="text-center p-12 text-light-text-secondary dark:text-brand-text-secondary bg-light-surface dark:bg-brand-dark/50 rounded-lg border border-light-border dark:border-brand-light/20">
-                    <p>{templates.length === 0 ? 'No templates created yet. Click "New Template" to start.' : 'No templates found in this category.'}</p>
-                </div>
-            )}
+            {renderTemplates()}
           </div>
         </div>
       </div>
 
-      {/* Template Editor Modal */}
-      {isEditorOpen && currentTemplate && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center animate-fade-in p-2 sm:p-4">
-          <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-7xl h-[95vh] lg:h-[90vh] p-4 sm:p-6 lg:p-8 flex flex-col">
+      {isDeleteModalOpen && templateToDelete && <DeleteTemplateModal template={templateToDelete} onClose={() => setIsDeleteModalOpen(false)} isSidebarCollapsed={isSidebarCollapsed} />}
+
+      {isEditorOpen && (
+        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}>
+          <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-6xl max-w-full h-[90vh] p-4 sm:p-6 lg:p-8 flex flex-col">
             <h2 className="text-2xl font-bold mb-6 font-title flex-shrink-0">
                 {templates.some(t => t.id === currentTemplate.id) ? 'Edit Template' : 'Create New Template'}
             </h2>
             
-            <div className="flex flex-col lg:grid lg:grid-cols-5 gap-6 flex-grow overflow-hidden">
-                {/* === EDITOR COLUMN === */}
-                <div className="lg:col-span-3 flex flex-col h-full overflow-hidden">
-                    <div className="flex-grow overflow-y-auto pr-0 lg:pr-4 space-y-4">
-                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                            <div>
-                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Template Name</label>
-                                <input type="text" name="name" value={currentTemplate.name} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Monthly Newsletter" />
+            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 flex-grow overflow-hidden">
+                {/* Left Column: Controls */}
+                <div className="flex flex-col h-full overflow-y-auto pr-0 lg:pr-4 space-y-6">
+                    <>
+                        {/* Basic Template Info */}
+                        <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
+                            <h3 className="text-lg font-bold">Template Details</h3>
+                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                <div>
+                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Template Name</label>
+                                    <input type="text" name="name" value={currentTemplate.name ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Monthly Newsletter" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Category</label>
+                                    <input type="text" name="category" value={currentTemplate.category ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Marketing" list="category-suggestions" />
+                                    <datalist id="category-suggestions">{categories.filter(c => c !== 'all' && c !== 'Uncategorized').map(c => <option key={c} value={c} />)}</datalist>
+                                </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Category</label>
-                                <input type="text" name="category" value={currentTemplate.category ?? ''} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" placeholder="e.g., Marketing" list="category-suggestions" />
-                                <datalist id="category-suggestions">{categories.filter(c => c !== 'all' && c !== 'Uncategorized').map(c => <option key={c} value={c} />)}</datalist>
+                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email Subject</label>
+                                <div className="flex items-center space-x-2">
+                                    <input type="text" name="subject" value={currentTemplate.subject ?? ''} onChange={handleTemplateChange} className={`flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border ${subjectError ? 'border-red-500' : 'border-light-border dark:border-brand-light'} focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent`} placeholder="Subject of the email" />
+                                    <button type="button" onClick={handleGenerateSubject} disabled={isGeneratingSubject || !editor?.getText().trim() || isAiDisabled} title={isAiDisabled ? "Daily AI limit reached" : "Generate subject with AI"} className="flex-shrink-0 bg-brand-accent-purple text-white font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 hover:bg-opacity-90 transition text-sm disabled:bg-slate-200 disabled:text-light-text-secondary dark:disabled:bg-brand-light dark:disabled:text-brand-text-secondary disabled:cursor-not-allowed">
+                                        {isGeneratingSubject ? <LoadingIcon /> : <AIIcon />}
+                                        <span className='hidden sm:inline'>{isGeneratingSubject ? '...' : 'AI'}</span>
+                                    </button>
+                                </div>
+                                {subjectError && <p className="text-red-500 text-sm mt-1">{subjectError}</p>}
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email Subject</label>
-                            <div className="flex items-center space-x-2">
-                                <input type="text" name="subject" value={currentTemplate.subject} onChange={handleTemplateChange} className={`flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border ${subjectError ? 'border-red-500' : 'border-light-border dark:border-brand-light'} focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent`} placeholder="Subject of the email" />
-                                <button type="button" onClick={handleGenerateSubject} disabled={isGeneratingSubject || !currentTemplate.body.trim() || isAiDisabled} title={isAiDisabled ? "Daily AI limit reached" : "Generate subject with AI"} className="flex-shrink-0 bg-brand-accent-purple text-white font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 hover:bg-opacity-90 transition text-sm disabled:bg-slate-200 disabled:text-light-text-secondary dark:disabled:bg-brand-light dark:disabled:text-brand-text-secondary disabled:cursor-not-allowed">
-                                    {isGeneratingSubject ? <LoadingIcon /> : <AIIcon />}
-                                    <span className='hidden sm:inline'>{isGeneratingSubject ? '...' : 'AI'}</span>
+
+                        {/* E-Card Settings */}
+                        <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
+                            <h3 className="text-lg font-bold">E-Card Settings</h3>
+                            <div>
+                                <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">E-Card Backdrop</label>
+                                <input type="file" name="ecardBackdrop" onChange={handleFileChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                            </div>
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold mt-4">E-Card Text Positioning</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name X Position</label>
+                                        <input type="number" name="nameX" value={currentTemplate.nameX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Y Position</label>
+                                        <input type="number" name="nameY" value={currentTemplate.nameY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Font Size</label>
+                                        <input type="number" name="nameFontSize" value={currentTemplate.nameFontSize ?? 48} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Name Color</label>
+                                        <input type="color" name="nameColor" value={currentTemplate.nameColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role X Position</label>
+                                        <input type="number" name="roleX" value={currentTemplate.roleX ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Y Position</label>
+                                        <input type="number" name="roleY" value={currentTemplate.roleY ?? 0} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Font Size</label>
+                                        <input type="number" name="roleFontSize" value={currentTemplate.roleFontSize ?? 36} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Role Color</label>
+                                        <input type="color" name="roleColor" value={currentTemplate.roleColor ?? '#000000'} onChange={handleTemplateChange} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button onClick={handleGeneratePdfPreview} className="w-full mt-4 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
+                                    <span>Generate E-card Preview</span>
                                 </button>
                             </div>
-                            {subjectError && <p className="text-red-500 text-sm mt-1">{subjectError}</p>}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">Email Body</label>
-                            <div className="bg-slate-100 dark:bg-brand-light/30 border border-light-border dark:border-brand-light rounded-t-md p-2 flex items-center space-x-1 flex-wrap gap-y-2 text-light-text dark:text-brand-text">
-                                {/* Toolbar */}
-                                <button title={isAiDisabled ? "Daily AI limit reached" : "Improve with AI"} onClick={handleImproveText} disabled={isImprovingText || isAiDisabled} className="flex items-center space-x-1.5 text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed">{isImprovingText ? <LoadingIcon/> : <SparklesIcon />}<span>Improve</span></button>
-                                <div className="h-6 border-l border-light-border dark:border-brand-light/50 mx-1"></div>
-                                <button title="Heading 1" onClick={() => wrapText('<h1>', '</h1>', true)} className="w-8 h-8 font-extrabold text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">H1</button>
-                                <button title="Heading 2" onClick={() => wrapText('<h2>', '</h2>', true)} className="w-8 h-8 font-bold text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">H2</button>
-                                <button title="Heading 3" onClick={() => wrapText('<h3>', '</h3>', true)} className="w-8 h-8 font-semibold text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">H3</button>
-                                <div className="h-6 border-l border-light-border dark:border-brand-light/50 mx-1"></div>
-                                <button title="Bold" onClick={() => wrapText('<strong>', '</strong>')} className="w-8 h-8 font-bold text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">B</button>
-                                <button title="Italic" onClick={() => wrapText('<em>', '</em>')} className="w-8 h-8 italic text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">I</button>
-                                <button title="Underline" onClick={() => wrapText('<u>', '</u>')} className="w-8 h-8 underline text-sm bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded">U</button>
-                                <div className="h-6 border-l border-light-border dark:border-brand-light/50 mx-1"></div>
-                                <button title="Blockquote" onClick={() => wrapText('<blockquote>', '</blockquote>', true)} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><QuoteIcon /></button>
-                                <button title="Unordered List" onClick={() => handleInsertList('ul')} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><ListUnorderedIcon /></button>
-                                <button title="Ordered List" onClick={() => handleInsertList('ol')} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><ListOrderedIcon /></button>
-                                <div className="h-6 border-l border-light-border dark:border-brand-light/50 mx-1"></div>
-                                <button title="Insert Link" onClick={handleInsertLink} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><LinkIcon /></button>
-                                <button title="Insert Image" onClick={handleInsertImage} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><ImageIcon /></button>
-                                <button title="Insert Button" onClick={handleInsertButton} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><ButtonIcon /></button>
-                                <button title="Insert Horizontal Rule" onClick={() => insertText('\n<hr />\n')} className="w-8 h-8 flex items-center justify-center bg-white hover:bg-slate-200 dark:bg-brand-light dark:hover:bg-brand-accent/20 rounded"><HorizontalRuleIcon /></button>
-                                <div className="h-6 border-l border-light-border dark:border-brand-light/50 mx-1"></div>
-                                <select onChange={(e) => { handleInsertPlaceholder(e.target.value); e.target.value = ''; }} className="text-xs bg-white text-brand-accent-purple dark:bg-brand-light px-2 py-1 rounded border-none focus:ring-0">
-                                    <option value="">Placeholders</option>
-                                    {placeholders.map(p => <option key={p} value={p}>{p}</option>)}
-                                </select>
+
+                        {/* Email Body Editor */}
+                        <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
+                            <h3 className="text-lg font-bold">Email Body</h3>
+                            <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
+                                <MenuBar editor={editor} placeholders={placeholders} />
+                                <EditorContent editor={editor} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
                             </div>
-                            <textarea ref={bodyTextareaRef} name="body" value={currentTemplate.body} onChange={handleTemplateChange} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 p-3 rounded-b-md border border-light-border dark:border-brand-light border-t-0 focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent font-mono text-sm" placeholder="Write your email content here..." />
                         </div>
-                    </div>
-                    {/* Test Email Section */}
-                    <div className="flex-shrink-0 mt-auto pt-4 border-t border-light-border dark:border-brand-light/20">
-                         <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-2">Send Test Email</label>
-                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                            <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="recipient@example.com" className="flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
-                            <button disabled title="This feature requires backend integration." className="bg-slate-300 text-slate-500 dark:bg-brand-light/50 dark:text-brand-text-secondary font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 cursor-not-allowed">
-                                <BlastIcon />
-                                <span>Send Test</span>
-                            </button>
-                         </div>
-                    </div>
+
+                        <div className="flex-shrink-0 mt-auto pt-4 border-t border-light-border dark:border-brand-light/20">
+                            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-2">Send Test Email</label>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="recipient@example.com" className="flex-grow bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                                <button disabled title="This feature requires backend integration." className="bg-slate-300 text-slate-500 dark:bg-brand-light/50 dark:text-brand-text-secondary font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 cursor-not-allowed">
+                                    <BlastIcon />
+                                    <span>Send Test</span>
+                                </button>
+                            </div>
+                        </div>
+                    </>
                 </div>
 
-                {/* === PREVIEW COLUMN === */}
-                <div className="lg:col-span-2 bg-slate-100 dark:bg-brand-darker rounded-lg p-1 flex flex-col h-full overflow-hidden mt-6 lg:mt-0">
-                    <div className="flex-shrink-0 p-3 border-b border-light-border dark:border-brand-light/20">
-                        <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">From: </span><strong className="text-light-text dark:text-white">{senderProfile?.name || '[Sender Name]'} &lt;{senderProfile?.email || '[sender.email@example.com]'}&gt;</strong></p>
-                        <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">Subject: </span><strong className="text-light-text dark:text-white">{currentTemplate.subject || '[No Subject]'}</strong></p>
-                        <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">To: </span><strong className="text-light-text dark:text-white">John Doe &lt;john.doe@example.com&gt;</strong></p>
+                {/* Right Column: Previews */}
+                <div className="flex flex-col h-full overflow-y-auto space-y-6">
+                    {/* Email Preview */}
+                    <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
+                        <h3 className="text-lg font-bold mb-2">Email Preview</h3>
+                        <div className="flex-shrink-0 p-3 border-b border-light-border dark:border-brand-light/20">
+                            <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">From: </span><strong className="text-light-text dark:text-white">{senderProfile?.name || '[Sender Name]'} &lt;{senderProfile?.email || '[sender.email@example.com]'}&gt;</strong></p>
+                            <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">Subject: </span><strong className="text-light-text dark:text-white">{currentTemplate.subject ?? '[No Subject]'}</strong></p>
+                            <p className="text-sm"><span className="text-light-text-secondary dark:text-brand-text-secondary">To: _</span><strong className="text-light-text dark:text-white">John Doe &lt;john.doe@example.com&gt;</strong></p>
+                        </div>
+                        <div className="flex-grow overflow-y-auto p-4">
+                            <div dangerouslySetInnerHTML={{ __html: renderPreviewBody() }} />
+                        </div>
                     </div>
-                    <div className="flex-grow overflow-y-auto p-4">
-                        <div dangerouslySetInnerHTML={{ __html: renderPreviewBody() }} />
+
+                    {/* E-card Preview */}
+                    <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex-grow flex flex-col">
+                        <h3 className="text-lg font-bold mb-2">E-card Interactive Editor</h3>
+                        <div ref={stageRef} className="relative w-full h-full min-h-[400px] border border-dashed border-light-border dark:border-brand-light/20 rounded-md overflow-hidden">
+                            {ecardBackdropPreview ? (
+                                <>
+                                    <img src={ecardBackdropPreview} alt="E-card backdrop" className="w-full h-full object-contain" />
+                                    <div className="absolute top-0 left-0 w-full h-full">
+                                        <Draggable
+                                            nodeRef={nameRef}
+                                            position={{ x: currentTemplate.nameX || 0, y: currentTemplate.nameY || 0 }}
+                                            onStop={(e, data) => {
+                                                setCurrentTemplate(prev => ({ ...prev, nameX: data.x, nameY: data.y }));
+                                            }}
+                                        >
+                                            <div ref={nameRef} style={{ color: currentTemplate.nameColor, fontSize: `${currentTemplate.nameFontSize}px`, position: 'absolute', cursor: 'move' }}>John Doe</div>
+                                        </Draggable>
+                                        <Draggable
+                                            nodeRef={roleRef}
+                                            position={{ x: currentTemplate.roleX || 0, y: currentTemplate.roleY || 0 }}
+                                            onStop={(e, data) => {
+                                                setCurrentTemplate(prev => ({ ...prev, roleX: data.x, roleY: data.y }));
+                                            }}
+                                        >
+                                            <div ref={roleRef} style={{ color: currentTemplate.roleColor, fontSize: `${currentTemplate.roleFontSize}px`, position: 'absolute', cursor: 'move' }}>Software Engineer</div>
+                                        </Draggable>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center text-light-text-secondary dark:text-brand-text-secondary py-12">
+                                    <p>Upload a backdrop to start the interactive editor</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -696,7 +882,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
             {editorError && <p className="text-red-500 text-sm mt-4 text-center">{editorError}</p>}
             
             <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-light-border dark:border-brand-light/20 flex-shrink-0">
-                <button onClick={handleCloseEditor} className="text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition">Cancel</button>
+                <button onClick={handleCloseEditor} className="text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition">Close</button>
                 <button onClick={handleSaveTemplate} className="bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition">Save Template</button>
             </div>
           </div>
@@ -705,3 +891,5 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ templates, s
     </>
   );
 };
+
+export default TemplatesManager;

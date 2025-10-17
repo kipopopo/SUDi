@@ -4,16 +4,17 @@ import { CheckCircleIcon, CrownIcon, CloseIcon } from './common/Icons';
 interface SubscriptionModalProps {
     onClose: () => void;
     onSubscribe: () => void;
+    isSidebarCollapsed: boolean;
 }
 
-export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, onSubscribe }) => {
+export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, onSubscribe, isSidebarCollapsed }) => {
     return (
         <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4"
+            className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}
             onClick={onClose}
         >
             <div 
-                className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-lg p-8 m-4 text-center relative"
+                className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-lg max-w-full p-8 text-center relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-brand-light/50">

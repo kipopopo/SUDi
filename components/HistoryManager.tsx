@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { BlastHistoryItem, RecipientActivity } from '../types';
 import { CloseIcon, CheckCircleIcon, HistoryIcon, EyeIcon, CursorClickIcon, UserRemoveIcon, MailOpenIcon, DownloadIcon, LoadingIcon } from './common/Icons';
+import { useData } from '../contexts/DataContext';
 
-interface HistoryManagerProps {
-    history: BlastHistoryItem[];
-}
+interface HistoryManagerProps {}
 
 const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> = ({ report, onClose }) => {
     const [activeTab, setActiveTab] = useState<'activity' | 'content'>('activity');
@@ -205,12 +204,7 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
         );
     }, [searchTerm, report.detailedRecipientActivity]);
 
-    const kpiData = [
-        { icon: <MailOpenIcon />, label: 'Delivery Rate', value: `${report.deliveryRate}%`, color: 'text-green-500' },
-        { icon: <EyeIcon />, label: 'Open Rate', value: `${report.openRate}%`, color: 'text-blue-500' },
-        { icon: <CursorClickIcon />, label: 'Click Rate', value: `${report.clickRate}%`, color: 'text-brand-accent' },
-        { icon: <UserRemoveIcon />, label: 'Unsubscribes', value: `${report.unsubscribeRate}%`, color: 'text-red-500' },
-    ];
+    
 
     const getStatusChip = (status: RecipientActivity['status']) => {
         const baseClass = "px-2 py-0.5 text-xs font-semibold rounded-full";
@@ -246,19 +240,7 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
 
                 <div className="flex-grow overflow-y-auto">
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        {kpiData.map(kpi => (
-                            <div key={kpi.label} className="bg-light-bg dark:bg-brand-light/30 p-4 rounded-lg">
-                                <div className={`flex items-center space-x-3 ${kpi.color}`}>
-                                    <div className="bg-current/10 p-2 rounded-full">{React.cloneElement(kpi.icon, { className: "w-6 h-6" })}</div>
-                                    <div>
-                                        <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">{kpi.label}</p>
-                                        <p className="text-2xl font-bold text-light-text dark:text-white">{kpi.value}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    
 
                     {/* Tabs */}
                     <div className="border-b border-light-border dark:border-brand-light/20 mb-4">
@@ -307,7 +289,8 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
     );
 };
 
-const HistoryManager: React.FC<HistoryManagerProps> = ({ history }) => {
+const HistoryManager: React.FC<HistoryManagerProps> = () => {
+    const { history } = useData();
     const [selectedReport, setSelectedReport] = useState<BlastHistoryItem | null>(null);
 
     const formatDateTime = (isoString: string | undefined) => {

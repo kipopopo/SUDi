@@ -20,6 +20,15 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   category?: string;
+  ecardBackdropPath?: string;
+  nameX?: number;
+  nameY?: number;
+  nameFontSize?: number;
+  nameColor?: string;
+  roleX?: number;
+  roleY?: number;
+  roleFontSize?: number;
+  roleColor?: string;
 }
 
 export interface RecipientActivity {
@@ -69,6 +78,7 @@ export interface AiUsage {
     count: number;
     limit: number;
     isExceeded: boolean;
+    resetTimestamp: number;
 }
 
 // Added for billing
@@ -85,4 +95,13 @@ export interface Invoice {
   amount: number;
   plan: 'Pro Plan Monthly';
   status: 'Paid';
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
 }

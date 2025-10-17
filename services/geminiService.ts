@@ -22,14 +22,12 @@ import { recordAiUsage } from './usageService';
 //     Your backend would then securely call the Gemini API using the key
 //     stored on the server.
 // ================================================================
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error("VITE_GEMINI_API_KEY environment variable not set. Please create a .env.local file and add the key.");
+if (!process.env.API_KEY) {
+  console.error("API_KEY environment variable not set.");
 }
 
 // Initialize the Google GenAI client with the API key.
-const ai = new GoogleGenAI({ apiKey: apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 /**
  * Generates an email body using the Gemini AI model based on a user-provided prompt and tone, streaming the response.
@@ -40,12 +38,12 @@ const ai = new GoogleGenAI({ apiKey: apiKey });
  * @returns {Promise<void>} A promise that resolves when the stream is complete.
  * @throws {Error} Throws an error if the AI content generation fails.
  */
-export const generateEmailContentStream = async (prompt: string, tone: string, onChunk: (chunk: GenerateContentResponse) => void): Promise<void> => {
+export const generateEmailContentStream = async (prompt: string, tone: string, placeholders: string[], onChunk: (chunk: GenerateContentResponse) => void): Promise<void> => {
   recordAiUsage();
   try {
     const response = await ai.models.generateContentStream({
         model: 'gemini-2.5-flash',
-        contents: `Sila jana kandungan emel yang menarik dalam Bahasa Malaysia dengan nada "${tone}", sesuai untuk demografi Malaysia, berdasarkan arahan berikut. Emel ini hendaklah sedia untuk dihantar. Jangan sertakan baris subjek. Arahan: "${prompt}"`,
+        contents: `Sila jana kandungan emel yang menarik dalam Bahasa Malaysia dengan nada "${tone}", sesuai untuk demografi Malaysia, berdasarkan arahan berikut. Emel ini hendaklah sedia untuk dihantar. Jangan sertakan baris subjek. Anda boleh menggunakan placeholder berikut jika sesuai: ${placeholders.join(', ')}. Arahan: "${prompt}"`,
         config: {
             temperature: 0.7,
             topP: 1,
@@ -70,10 +68,10 @@ export const generateEmailContentStream = async (prompt: string, tone: string, o
  * @returns {Promise<string>} A promise that resolves to the AI-generated subject line.
  * @throws {Error} Throws an error if the AI subject generation fails.
  */
-export const generateEmailSubject = async (templateName: string, emailBody: string): Promise<string> => {
+export const generateEmailSubject = async (templateName: string, emailBody: string, placeholders: string[]): Promise<string> => {
   recordAiUsage();
   try {
-    const prompt = `Sila jana baris subjek emel yang menarik dan ringkas dalam Bahasa Malaysia berdasarkan nama templat dan kandungan emel berikut. Pastikan ia sesuai untuk audiens di Malaysia. Berikan teks subjek sahaja, tanpa sebarang tanda petikan atau awalan seperti "Subjek:".
+    const prompt = `Sila jana baris subjek emel yang menarik dan ringkas dalam Bahasa Malaysia berdasarkan nama templat dan kandungan emel berikut. Pastikan ia sesuai untuk audiens di Malaysia. Berikan teks subjek sahaja, tanpa sebarang tanda petikan atau awalan seperti "Subjek:". Kandungan emel mungkin mengandungi placeholder seperti: ${placeholders.join(', ')}.
 
 Nama Templat: "${templateName}"
 

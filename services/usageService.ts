@@ -22,17 +22,27 @@ export const getAiUsage = (): AiUsage => {
         usage = JSON.parse(storedData);
         // Check if the reset period has passed
         if (Date.now() > usage.resetTimestamp) {
+            const now = new Date();
+            const nextMidnight = new Date(now);
+            nextMidnight.setDate(now.getDate() + 1);
+            nextMidnight.setHours(0, 0, 0, 0); // Set to 00:00:00.000 of the next day
+
             usage = {
                 count: 0,
-                resetTimestamp: Date.now() + RESET_PERIOD,
+                resetTimestamp: nextMidnight.getTime(),
             };
             localStorage.setItem(AI_USAGE_KEY, JSON.stringify(usage));
         }
     } else {
         // Initialize for a new user
+        const now = new Date();
+        const nextMidnight = new Date(now);
+        nextMidnight.setDate(now.getDate() + 1);
+        nextMidnight.setHours(0, 0, 0, 0); // Set to 00:00:00.000 of the next day
+
         usage = {
             count: 0,
-            resetTimestamp: Date.now() + RESET_PERIOD,
+            resetTimestamp: nextMidnight.getTime(),
         };
         localStorage.setItem(AI_USAGE_KEY, JSON.stringify(usage));
     }
@@ -41,6 +51,7 @@ export const getAiUsage = (): AiUsage => {
         count: usage.count,
         limit: USAGE_LIMIT,
         isExceeded: usage.count >= USAGE_LIMIT,
+        resetTimestamp: usage.resetTimestamp,
     };
 };
 

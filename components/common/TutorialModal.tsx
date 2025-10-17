@@ -4,6 +4,7 @@ interface TutorialModalProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  isSidebarCollapsed: boolean;
 }
 
 /**
@@ -15,14 +16,14 @@ interface TutorialModalProps {
  * @param {React.ReactNode} props.children - The content to be displayed within the modal.
  * @returns {React.ReactElement} The rendered tutorial modal component.
  */
-export const TutorialModal: React.FC<TutorialModalProps> = ({ title, onClose, children }) => {
+export const TutorialModal: React.FC<TutorialModalProps> = ({ title, onClose, children, isSidebarCollapsed }) => {
   return (
     <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center animate-fade-in"
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}
       onClick={onClose} // Allows closing the modal by clicking the background overlay.
     >
       <div 
-        className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-2xl p-8 m-4 max-h-[90vh] flex flex-col"
+        className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-2xl max-w-full p-8 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()} // Prevents clicks inside the modal from closing it.
       >
         <h2 className="text-2xl font-bold mb-6 text-brand-accent-purple dark:text-brand-accent font-title">

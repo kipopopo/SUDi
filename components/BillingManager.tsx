@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { PaymentMethod, Invoice } from '../types';
 import { CreditCardIcon, PlusIcon, CloseIcon, DeleteIcon, DownloadIcon } from './common/Icons';
+import { useSettings } from '../contexts/SettingsContext';
 
-interface BillingManagerProps {
-    paymentMethods: PaymentMethod[];
-    setPaymentMethods: React.Dispatch<React.SetStateAction<PaymentMethod[]>>;
-    invoices: Invoice[];
-}
+interface BillingManagerProps {}
 
-const BillingManager: React.FC<BillingManagerProps> = ({ paymentMethods, setPaymentMethods, invoices }) => {
+const BillingManager: React.FC<BillingManagerProps> = () => {
+    const { paymentMethods, setPaymentMethods, invoices } = useSettings();
     const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
     const [newCard, setNewCard] = useState({ name: '', number: '', expiry: '', cvc: '' });
 

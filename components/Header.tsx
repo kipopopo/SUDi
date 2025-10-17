@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ThemeToggle } from './common/ThemeToggle';
 import { UserIcon, LogoutIcon, MenuIcon } from './common/Icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
   handleLogout: () => void;
   onMenuClick: () => void;
+  isModalOpen: boolean;
+  isSidebarCollapsed: boolean;
 }
 
 /**
@@ -17,11 +18,15 @@ interface HeaderProps {
  * @param {HeaderProps} props - The props for the component.
  * @returns {React.ReactElement} The rendered header component.
  */
-export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout, onMenuClick }) => {
+export const Header: React.FC<HeaderProps> = ({ handleLogout, onMenuClick, isModalOpen, isSidebarCollapsed }) => {
+  const { theme, toggleTheme } = useTheme();
+  // State to store the URL of the user's avatar image.
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   // State to store the URL of the user's avatar image.
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   // Ref to access the hidden file input element for avatar uploads.
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   /**
    * A side effect that runs once when the component mounts.
@@ -34,6 +39,19 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   /**
    * Handles the click event on the avatar.
    * It programmatically triggers a click on the hidden file input to open the file selection dialog.
@@ -43,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout
   };
 
   /**
-   * Handles the file selection event from the file input.
+   * Handles the file selection event from the file input.,
    * It reads the selected image file, converts it to a base64 Data URL,
    * saves it to localStorage, and updates the component's state to display the new avatar.
    * @param {React.ChangeEvent<HTMLInputElement>} event - The file input change event.
@@ -61,9 +79,13 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout
     }
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(prev => !prev);
+  };
+
 
   return (
-    <header className="bg-light-surface/80 dark:bg-brand-dark/50 backdrop-blur-sm p-4 border-b border-light-border dark:border-brand-light/20 flex items-center justify-between z-20">
+    <header className={`bg-light-bg dark:bg-brand-darker p-4 flex justify-between items-center border-b border-light-text-secondary dark:border-brand-light transition-transform duration-300 ease-in-out ${isModalOpen ? 'header-hidden' : ''}`}>
       <div className="flex items-center space-x-4">
         <button onClick={onMenuClick} className="lg:hidden text-light-text dark:text-brand-text p-1">
           <MenuIcon />
@@ -71,27 +93,18 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout
         <h1 className="text-lg sm:text-xl font-bold text-light-text dark:text-brand-text tracking-wider font-title">Sistem Undangan Digital</h1>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4">
-        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+        <ThemeToggle />
         
-        <button 
-            onClick={handleLogout} 
-            className="flex items-center space-x-2 text-sm text-light-text-secondary dark:text-brand-text-secondary hover:text-red-500 dark:hover:text-red-400 transition"
-            title="Logout"
-        >
-            <LogoutIcon />
-            <span className="hidden sm:inline">Logout</span>
-        </button>
 
-        <span className="text-light-text-secondary dark:text-brand-text-secondary hidden sm:inline">|</span>
 
-        <span className="text-sm text-light-text-secondary dark:text-brand-text-secondary hidden md:block">Welcome, Admin</span>
+
         
-        {/* Avatar Section */}
-        <div className="relative">
+        {/* Avatar Section with Dropdown */}
+        <div className="relative" ref={dropdownRef}>
           <button 
-            onClick={handleAvatarClick} 
+            onClick={toggleDropdown} 
             className="w-10 h-10 rounded-full bg-brand-accent-purple/20 dark:bg-brand-light/50 flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-brand-accent transition-all"
-            title="Change profile picture"
+            title="User Menu"
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
@@ -101,6 +114,37 @@ export const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, handleLogout
               </div>
             )}
           </button>
+
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-light-surface dark:bg-brand-dark rounded-md shadow-lg py-1 z-50 border border-light-border dark:border-brand-light/20 animate-fade-in-up">
+              <button 
+                onClick={() => { /* Navigate to Profile Summary */ toggleDropdown(); }}
+                className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
+              >
+                Profile Summary
+              </button>
+              <button 
+                onClick={() => { /* Navigate to Activity Logs */ toggleDropdown(); }}
+                className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
+              >
+                Activity Logs
+              </button>
+              <button 
+                onClick={() => { handleAvatarClick(); toggleDropdown(); }}
+                className="block px-4 py-2 text-sm text-light-text dark:text-brand-text hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
+              >
+                Change Profile Picture
+              </button>
+              <div className="border-t border-light-border dark:border-brand-light/20 my-1"></div>
+              <button 
+                onClick={() => { handleLogout(); toggleDropdown(); }}
+                className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-light-hover dark:hover:bg-brand-light/10 w-full text-left"
+              >
+                <LogoutIcon className="inline-block mr-2 w-5 h-5" /> Logout
+              </button>
+            </div>
+          )}
+
           <input
             type="file"
             ref={fileInputRef}

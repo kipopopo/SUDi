@@ -1,103 +1,122 @@
 import React from 'react';
-import { View, AiUsage } from '../types';
-import { DashboardIcon, ParticipantsIcon, DepartmentsIcon, TemplatesIcon, BlastIcon, HistoryIcon, SettingsIcon, LogoIcon, CloseIcon, ReportIcon, CrownIcon, CreditCardIcon, UserCircleIcon, MailIcon } from './common/Icons';
+import { NavLink } from 'react-router-dom';
+import { DashboardIcon, ParticipantsIcon, DepartmentsIcon, TemplatesIcon, BlastIcon, HistoryIcon, AnalyticsIcon, SettingsIcon, SubscriptionIcon, BillingIcon, UserIcon, LogoutIcon, ChevronLeftIcon, ChevronRightIcon, LightIcon, DarkIcon, UsersIcon } from './common/Icons';
+import { AiUsage, User } from '../types';
 
 interface SidebarProps {
-  currentView: View;
-  setCurrentView: (view: View) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  isCollapsed: boolean;
+  setIsCollapsed: (isCollapsed: boolean) => void;
   aiUsage: AiUsage;
   isSubscribed: boolean;
+  timeUntilReset: string;
+  user: User | null;
 }
 
-/**
- * Renders the main sidebar navigation for the application.
- * It displays the application logo and a list of navigation items.
- * On mobile, it's a togglable overlay. On desktop, it's a fixed panel.
- * @param {SidebarProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered sidebar component.
- */
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isOpen, setIsOpen, aiUsage, isSubscribed }) => {
-  // Defines the navigation items with their ID, label, and corresponding icon, organized by group.
-  const navGroups = {
-    'Overview': [
-      { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-      { id: 'analytics', label: 'Analytics', icon: <ReportIcon /> },
-    ],
-    'Management': [
-      { id: 'departments', label: 'Departments', icon: <DepartmentsIcon /> },
-      { id: 'participants', label: 'Participants', icon: <ParticipantsIcon /> },
-      { id: 'templates', label: 'Templates', icon: <TemplatesIcon /> },
-    ],
-    'Campaigns': [
-      { id: 'blast', label: 'Email Blast', icon: <BlastIcon /> },
-      { id: 'history', label: 'History', icon: <HistoryIcon /> },
-    ],
-    'Account': [
-      { id: 'subscription', label: 'Subscription', icon: <CrownIcon /> },
-      { id: 'billing', label: 'Billing', icon: <CreditCardIcon /> },
-      { id: 'profile', label: 'Profile', icon: <UserCircleIcon /> },
-    ],
-    'Configuration': [
-      { id: 'senderSetup', label: 'Sender Setup', icon: <MailIcon /> },
-      { id: 'emailSettings', label: 'Email Settings', icon: <SettingsIcon /> },
-    ]
-  };
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, aiUsage, isSubscribed, timeUntilReset, user }) => {
+  const linkClasses = (isActive: boolean) =>
+    `flex items-center p-2 rounded-lg transition-colors duration-200 ${
+      isCollapsed ? 'w-10 h-10 justify-center mx-auto' : 'w-full justify-start space-x-3'
+    } ${
+      isActive
+        ? 'bg-brand-accent-purple text-white'
+        : 'text-light-text-secondary dark:text-brand-text-secondary hover:bg-light-bg dark:hover:bg-brand-light/50'
+    } [&>svg]:w-5 [&>svg]:h-5`;
 
-  const handleNavClick = (view: View) => {
-    setCurrentView(view);
-    // Close sidebar on navigation in mobile view
+  const spanClasses = isCollapsed ? 'hidden' : '';
+
+  const handleNavClick = () => {
     if (window.innerWidth < 1024) {
       setIsOpen(false);
     }
   };
 
   return (
-    <aside className={`w-64 bg-light-surface/90 dark:bg-brand-dark/60 backdrop-blur-lg fixed top-0 left-0 h-full p-4 flex flex-col z-40 border-r border-light-border dark:border-brand-light/20 transition-transform duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-      <div className="flex items-center justify-between p-4 mb-4">
-        <div className="flex items-center space-x-3">
-            <LogoIcon />
-            <span className="text-2xl font-bold text-light-text dark:text-white font-title">SUDi</span>
-        </div>
-        <button onClick={() => setIsOpen(false)} className="lg:hidden p-1 text-light-text-secondary dark:text-brand-text-secondary">
-          <CloseIcon />
+    <aside className={`bg-light-surface/90 dark:bg-brand-dark/60 backdrop-blur-lg fixed top-0 left-0 h-full py-4 flex flex-col z-40 border-r border-light-border dark:border-brand-light/20 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+      <div className={`flex items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        {!isCollapsed && (
+          <div className="flex items-center space-x-2">
+            <svg className="w-8 h-8 text-brand-accent-purple" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+            <span className="text-xl font-semibold text-light-text dark:text-white font-title">SUDi</span>
+          </div>
+        )}
+        <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-2 rounded-full hover:bg-light-bg dark:hover:bg-brand-light/50 text-light-text-secondary dark:text-brand-text-secondary transition">
+          {isCollapsed ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
+        </button>
+        <button onClick={() => setIsOpen(false)} className="lg:hidden p-2 text-light-text-secondary dark:text-brand-text-secondary">
+          <ChevronLeftIcon className="w-5 h-5" />
         </button>
       </div>
-      <nav className="flex-grow flex flex-col space-y-1 overflow-y-auto -mr-2 pr-2">
-        {Object.entries(navGroups).map(([groupName, items]) => (
-          <div key={groupName}>
-            <h3 className="px-3 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider">
-              {groupName}
-            </h3>
-            <div className="space-y-1">
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id as View)}
-                  // Dynamically applies classes for active and hover states
-                  className={`w-full flex items-center space-x-4 p-3 rounded-lg text-left transition-all duration-200 ${
-                    currentView === item.id
-                      ? 'bg-brand-accent-purple/10 text-brand-accent-purple dark:bg-brand-accent/10 dark:text-brand-accent shadow-lg'
-                      : 'text-light-text-secondary dark:text-brand-text-secondary hover:bg-light-bg dark:hover:bg-brand-light/50 hover:text-light-text dark:hover:text-white'
-                  }`}
-                >
-                  <div className="w-6 flex items-center justify-center">
-                      {item.icon}
-                  </div>
-                  <span className="font-semibold">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
+
+      <div className="flex-1 overflow-y-auto mt-8">
+        <nav className="flex-1 flex flex-col space-y-2 px-2">
+          <NavLink to="/dashboard" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Dashboard">
+            <DashboardIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Dashboard</span>
+          </NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Analytics">
+            <AnalyticsIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Analytics</span>
+          </NavLink>
+          
+          <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Management</p>
+          <NavLink to="/departments" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Departments">
+            <DepartmentsIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Departments</span>
+          </NavLink>
+          <NavLink to="/participants" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Participants">
+            <ParticipantsIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Participants</span>
+          </NavLink>
+          <NavLink to="/templates" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Templates">
+            <TemplatesIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Templates</span>
+          </NavLink>
+
+          <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Campaigns</p>
+          <NavLink to="/blast" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Email Blast">
+            <BlastIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Email Blast</span>
+          </NavLink>
+          <NavLink to="/history" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="History">
+            <HistoryIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>History</span>
+          </NavLink>
+
+          <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Account</p>
+          <NavLink to="/subscription" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Subscription">
+            <SubscriptionIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Subscription</span>
+          </NavLink>
+          <NavLink to="/billing" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Billing">
+            <BillingIcon className="w-5 h-5" />
+            <span className={`text-sm ${spanClasses}`}>Billing</span>
+          </NavLink>
+          <NavLink to="/settings" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Settings">
+                <SettingsIcon className="w-5 h-5" />
+                <span className={`text-sm ${spanClasses}`}>Settings</span>
+          </NavLink>
+          {user?.role === 'SuperAdmin' && (
+            <NavLink to="/users" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Users">
+              <UsersIcon className="w-5 h-5" />
+              <span className={`text-sm ${spanClasses}`}>Users</span>
+            </NavLink>
+          )}
+
+          <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Configuration</p>
+
+
+        </nav>
+      </div>
       
-      <div className="mt-auto flex-shrink-0">
-        <div className="bg-light-bg dark:bg-brand-light/30 p-3 rounded-lg text-center">
+      <div className="mt-auto flex-shrink-0 p-2">
+        <div className={`bg-light-bg dark:bg-brand-light/30 p-3 rounded-lg ${isCollapsed ? 'hidden' : ''}`}>
             {isSubscribed ? (
                 <div className="text-sm font-semibold text-yellow-500 flex items-center justify-center space-x-2">
-                    <CrownIcon className="w-5 h-5" />
+                    <SubscriptionIcon className="w-5 h-5" />
                     <span>Pro Plan Active</span>
                 </div>
             ) : (
@@ -109,15 +128,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
                           style={{ width: `${(aiUsage.count / aiUsage.limit) * 100}%` }}
                         ></div>
                     </div>
-                    <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary">
-                        {aiUsage.limit - aiUsage.count} actions remaining today
+                    <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">
+                        {aiUsage.limit - aiUsage.count} actions remaining
                     </p>
+                    {aiUsage.count > 0 && (
+                        <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary mt-1">
+                            Resets in {timeUntilReset}
+                        </p>
+                    )}
                 </div>
             )}
-        </div>
-        <div className="p-4 text-center text-xs text-light-text-secondary/80 dark:text-brand-text-secondary">
-          <p>&copy; 2025 FELDA</p>
-          <p>AI-Powered Invitations</p>
         </div>
       </div>
     </aside>
