@@ -16,7 +16,7 @@ module.exports = {
        "SMTP_PASS": "123456789",
        "BLAST_SMTP_USER": "undangan-noreply@ai.sudi.pro",
        "BLAST_SMTP_PASS": "123456789",
-       "JWT_SECRET": "1acf4a3bc396110deee702b121be1c9d995dac11732c614f31683d8513bee37b"
+       "JWT_SECRET": "JWT_SECRET_HERE"
     }
   }]
 }
