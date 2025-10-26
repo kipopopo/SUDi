@@ -25,3 +25,6 @@ dist-ssr
 .gitignore
 TODO.md
 .blackboxrules
+.env
+backend/.env
+backend/ecosystem.config.js
