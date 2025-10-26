@@ -123,9 +123,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { departments, participants, templates, history } = useData();
-  const completedCampaigns = history.filter(item => item.status === 'Completed').length;
+  const completedCampaigns = (history || []).filter(item => item.status === 'Completed').length;
   
-  const recentActivities = history.slice().sort((a, b) => {
+  const recentActivities = (history || []).slice().sort((a, b) => {
     const dateA = new Date(a.scheduledDate || a.sentDate || 0).getTime();
     const dateB = new Date(b.scheduledDate || b.sentDate || 0).getTime();
     return dateB - dateA;

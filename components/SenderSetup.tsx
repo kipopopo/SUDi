@@ -99,7 +99,7 @@ const SenderSetup: React.FC<SenderSetupProps> = () => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g., The SUDi Team"
-                            className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
+                            className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent dark:text-white"
                         />
                     </div>
                      <div>
@@ -110,7 +110,7 @@ const SenderSetup: React.FC<SenderSetupProps> = () => {
                             value={email}
                             onChange={handleEmailChange}
                             placeholder="e.g., noreply@sudi.app"
-                            className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
+                            className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent dark:text-white"
                         />
                     </div>
                 </div>
@@ -177,4 +177,7 @@ const SenderSetup: React.FC<SenderSetupProps> = () => {
 
             </div>
         </div>
+    );
 };
+
+export default SenderSetup;

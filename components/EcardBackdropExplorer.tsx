@@ -71,7 +71,7 @@ const EcardBackdropExplorer: React.FC<EcardBackdropExplorerProps> = ({ onClose, 
                         </div>
                     ))}
                     {files.map(file => (
-                        <div key={file} onClick={() => onSelect(`/uploads${currentPath === '/' ? '/' : currentPath + '/'}${file}`)} className="border border-light-border dark:border-brand-light/20 rounded-lg overflow-hidden hover:border-brand-accent-purple dark:hover:border-brand-accent cursor-pointer">
+                        <div key={file} onClick={() => onSelect(`/api/ecard-backdrop${currentPath === '/' ? '/' : currentPath + '/'}${file}`)} className="border border-light-border dark:border-brand-light/20 rounded-lg overflow-hidden hover:border-brand-accent-purple dark:hover:border-brand-accent cursor-pointer">
                             <img src={`/api/ecard-backdrop${currentPath === '/' ? '/' : currentPath + '/'}${file}`} alt={file} className="w-full h-32 object-cover" />
                         </div>
                     ))}

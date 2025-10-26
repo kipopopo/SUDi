@@ -36,6 +36,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const initialUserSettingsLoaded = useRef(false);
   const initialGlobalSettingsLoaded = useRef(false);
 
+  // Load sender profile from localStorage on initial component mount
+  useEffect(() => {
+    const storedSenderProfile = getSenderProfile();
+    if (storedSenderProfile) {
+      setSenderProfile(storedSenderProfile);
+    }
+  }, []);
+
   // Fetch user and global settings from backend when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -45,6 +53,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setUserSettings(fetchedUserSettings);
           const fetchedGlobalSettings = await getGlobalSettings();
           setGlobalSettings(fetchedGlobalSettings);
+          const storedSenderProfile = getSenderProfile();
+          if (storedSenderProfile) {
+            setSenderProfile(storedSenderProfile);
+          }
         } catch (error) {
           console.error("Failed to fetch settings:", error);
           setUserSettings(defaultAppSettings);
@@ -62,24 +74,28 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [isAuthenticated, user]);
 
-  // Save user settings to backend when userSettings state changes
   useEffect(() => {
-    if (!isAuthenticated) return;
-    // Skip saving until initial user settings have been loaded from backend
-    if (!initialUserSettingsLoaded.current) {
-      initialUserSettingsLoaded.current = true;
-      return;
-    }
-    if (userSettings !== defaultAppSettings) {
-      const saveUserSetting = async () => {
-        try {
-          await saveUserSettings(userSettings);
-        } catch (error) {
-          console.error("Failed to save user settings:", error);
-        }
-      };
-      saveUserSetting();
-    }
+    // This useEffect is disabled because there are currently no user-specific settings
+    // that need to be persisted to the database. The `saveUserSettings` function makes a call
+    // to a placeholder endpoint that returns a 501 Not Implemented error.
+    // To re-enable, implement the PUT /api/user/settings endpoint in the backend.
+
+    // if (!isAuthenticated) return;
+    // // Skip saving until initial user settings have been loaded from backend
+    // if (!initialUserSettingsLoaded.current) {
+    //   initialUserSettingsLoaded.current = true;
+    //   return;
+    // }
+    // if (userSettings !== defaultAppSettings) {
+    //   const saveUserSetting = async () => {
+    //     try {
+    //       await saveUserSettings(userSettings);
+    //     } catch (error) {
+    //       console.error("Failed to save user settings:", error);
+    //     }
+    //   };
+    //   saveUserSetting();
+    // }
   }, [userSettings, isAuthenticated]);
 
   // Save global settings to backend when globalSettings state changes
@@ -104,7 +120,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // The following useEffects are for other data types still using localStorage
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && senderProfile) {
       saveSenderProfile(senderProfile);
     }
   }, [senderProfile, isAuthenticated]);

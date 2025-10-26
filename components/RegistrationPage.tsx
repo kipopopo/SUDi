@@ -202,4 +202,5 @@ const RegistrationPage: React.FC = () => {
                 </div>
             </div>
         </div>
+    );
 };

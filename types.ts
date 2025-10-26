@@ -105,3 +105,11 @@ export interface User {
   lastName?: string;
   role: string;
 }
+
+export interface ActivityLogItem {
+  id: string;
+  user: string;
+  action: string;
+  details: string;
+  timestamp: string;
+}

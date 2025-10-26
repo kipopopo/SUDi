@@ -3,6 +3,7 @@ import cors from 'cors';
 import sqlite3 from 'sqlite3';
 import bodyParser from 'body-parser';
 import nodemailer from 'nodemailer';
+
 import dotenv from 'dotenv';
 import multer from 'multer';
 import { uploadFile } from './src/file-upload';
@@ -10,29 +11,31 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import fs from 'fs';
+
 import { generateEcardPdf } from './src/ecardGenerator';
+import { emailService } from './src/email/emailService';
 
 interface AuthenticatedRequest extends Request {
-  userId?: string;
+  user?: any; 
 }
 
 const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (token == null) return res.sendStatus(401); // No token
+  if (token == null) return res.sendStatus(401); 
 
   jwt.verify(token, process.env.JWT_SECRET as string, (err: any, user: any) => {
     if (err) {
       console.error('JWT verification failed:', err);
-      return res.sendStatus(403); // Token no longer valid
+      return res.sendStatus(403);
     }
-    req.userId = user.id;
+    req.user = user;
     next();
   });
 };
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 app.use(cors());
@@ -55,18 +58,6 @@ app.get(/\/api\/ecard-backdrop\/(.*)/, (req, res) => {
   });
 });
 
-const verificationCodes = new Map<string, { code: string, expires: number }>();
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
 const initialDepartments = [
   { id: '1', name: 'Marketing' },
   { id: '2', name: 'Engineering' },
@@ -84,248 +75,33 @@ const initialParticipants = [
 ];
 
 const initialTemplates = [
-  { id: 't1', name: 'Tech Conference Invite', subject: 'Invitation: Annual Tech Conference 2024', body: `Hello {name},
-
-You are invited to our annual tech conference...`, category: 'Event Invitations' },
-  { id: 't2', name: 'Product Launch Announcement', subject: 'Introducing Our New Product!', body: `Hi {name},
-
-We are excited to announce the launch of our new product...`, category: 'Marketing' },
-  { id: 't3', name: 'Internal Q3 Update', subject: 'Q3 Company Performance Review', body: `Hello Team,
-
-Please join us for the quarterly review...`, category: 'Internal Communication' }
+  { id: 't1', name: 'Tech Conference Invite', subject: 'Invitation: Annual Tech Conference 2024', body: `Hello {name},` },
+  { id: 't2', name: 'Product Launch Announcement', subject: 'Introducing Our New Product!', body: `Hi {name},` },
+  { id: 't3', name: 'Internal Q3 Update', subject: 'Q3 Company Performance Review', body: `Hello Team,` }
 ];
 
 const db = new sqlite3.Database('./database.db', (err) => {
   if (err) {
     console.error(err.message);
   }
-  
 });
+
+const logActivity = (user: string, action: string, details: string) => {
+  const timestamp = new Date().toISOString();
+  db.run('INSERT INTO activity_logs (user, action, details, timestamp) VALUES (?, ?, ?, ?)', [user, action, details, timestamp]);
+};
 
 db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS departments (
-    id TEXT PRIMARY KEY,
-    name TEXT
-  )`,
-   (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    db.all('SELECT * FROM departments', [], (err, rows) => {
-      if (err) {
-        console.error(err.message);
-      }
-      if (rows.length === 0) {
-        const stmt = db.prepare('INSERT INTO departments VALUES (?, ?)');
-        initialDepartments.forEach(dep => {
-          stmt.run(dep.id, dep.name);
-        });
-        stmt.finalize();
-      }
-    });
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS participants (
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    role TEXT,
-    departmentId TEXT
-  )`,
-   (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    db.all('SELECT * FROM participants', [], (err, rows) => {
-      if (err) {
-        console.error(err.message);
-      }
-      if (rows.length === 0) {
-        const stmt = db.prepare('INSERT INTO participants VALUES (?, ?, ?, ?, ?)');
-        initialParticipants.forEach(p => {
-          stmt.run(p.id, p.name, p.email, p.role, p.departmentId);
-        });
-        stmt.finalize();
-      }
-    });
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS templates (
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    subject TEXT,
-    body TEXT,
-    category TEXT,
-    ecardBackdropPath TEXT,
-    nameX INTEGER,
-    nameY INTEGER,
-    nameFontSize INTEGER,
-    nameColor TEXT,
-    roleX INTEGER,
-    roleY INTEGER,
-    roleFontSize INTEGER,
-    roleColor TEXT
-  )`,
-   (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    // Add ecardBackdropPath column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN ecardBackdropPath TEXT", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add nameX column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN nameX INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add nameY column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN nameY INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add nameFontSize column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN nameFontSize INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add nameColor column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN nameColor TEXT", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add roleX column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN roleX INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add roleY column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN roleY INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add roleFontSize column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN roleFontSize INTEGER", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-    // Add roleColor column if it doesn't exist
-    db.run("ALTER TABLE templates ADD COLUMN roleColor TEXT", (alterErr) => {
-      if (alterErr && !alterErr.message.includes('duplicate column name')) {
-        console.error("Error altering templates table:", alterErr.message);
-      }
-    });
-
-    db.all('SELECT * FROM templates', [], (err, rows) => {
-      if (err) {
-        console.error(err.message);
-      }
-      if (rows.length === 0) {
-        const stmt = db.prepare('INSERT INTO templates (id, name, subject, body, category, ecardBackdropPath) VALUES (?, ?, ?, ?, ?, ?)');
-        initialTemplates.forEach(t => {
-          stmt.run(t.id, t.name, t.subject, t.body, t.category, null);
-        });
-        stmt.finalize();
-      }
-    });
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS blast_history (
-    id TEXT PRIMARY KEY,
-    templateName TEXT,
-    subject TEXT,
-    recipientGroup TEXT,
-    recipientCount INTEGER,
-    sentDate TEXT,
-    status TEXT,
-    scheduledDate TEXT,
-    deliveryRate REAL,
-    openRate REAL,
-    clickRate REAL,
-    unsubscribeRate REAL,
-    body TEXT,
-    recipientIds TEXT,
-    detailedRecipientActivity TEXT
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS users (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    username TEXT UNIQUE,\n    password TEXT,\n    email TEXT UNIQUE,\n    firstName TEXT,\n    lastName TEXT,\n    role TEXT\n  )`, (err) => {
-    if (err) {
-      console.error('Error creating users table:', err.message);
-    } else {
-      db.get("SELECT COUNT(*) as count FROM users", (err, row: { count: number }) => {
-        if (err) {
-          console.error('Error counting users:', err.message);
-        } else if (row.count === 0) {
-          const salt = bcrypt.genSaltSync(10);
-          const hash = bcrypt.hashSync('superadmin', salt);
-          db.run('INSERT INTO users (username, password, role, firstName, lastName, email) VALUES (?, ?, ?, ?, ?, ?)', ['superadmin', hash, 'SuperAdmin', 'Super', 'Admin', 'superadmin@sudi.app'], (err) => {
-            if (err) {
-              console.error('Error inserting superadmin:', err.message);
-            }
-          });
-        }
-      });
-    }
-  });
-
-  // Add new columns if they don't exist (run after table creation)
-  // Note: UNIQUE constraints removed from ALTER TABLE to avoid issues with existing data
-  // Uniqueness will be enforced by application logic
-  db.run("ALTER TABLE users ADD COLUMN email TEXT", (alterErr) => {
-    if (alterErr && !alterErr.message.includes('duplicate column name')) {
-      console.error("Error altering users table for email:", alterErr.message);
-    }
-  });
-  db.run("ALTER TABLE users ADD COLUMN firstName TEXT", (alterErr) => {
-    if (alterErr && !alterErr.message.includes('duplicate column name')) {
-      console.error("Error altering users table for firstName:", alterErr.message);
-    }
-  });
-  db.run("ALTER TABLE users ADD COLUMN lastName TEXT", (alterErr) => {
-    if (alterErr && !alterErr.message.includes('duplicate column name')) {
-      console.error("Error altering users table for lastName:", alterErr.message);
-    }
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS settings (\n    userId TEXT PRIMARY KEY\n  )`, (err) => {
-    if (err) {
-      console.error('Error creating settings table:', err.message);
-    }
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS global_settings (\n    id INTEGER PRIMARY KEY DEFAULT 1,\n    globalHeader TEXT,\n    globalFooter TEXT\n  )`, (err) => {
-    if (err) {
-      console.error('Error creating global_settings table:', err.message);
-    } else {
-      // Insert default global settings if the table is empty
-      db.get('SELECT COUNT(*) as count FROM global_settings', [], (err, row: { count: number }) => {
-        if (err) {
-          console.error('Error counting global_settings:', err.message);
-        } else if (row.count === 0) {
-          db.run('INSERT INTO global_settings (id, globalHeader, globalFooter) VALUES (?, ?, ?)', [
-            1,
-            '<!-- Your global header HTML goes here. It will be automatically added to the top of every email. -->',
-            '<!-- Your global footer HTML goes here. It will be automatically added to the bottom of every email. -->\n<div style="text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0; margin-top: 20px; font-family: sans-serif; font-size: 12px; color: #64748b;">\n    <p>SUDi HQ, Persiaran Perdana, 62502 Putrajaya</p>\n    <p>&copy; 2025 FELDA. All rights reserved.</p>\n    <p><a href="#" style="color: #9333ea;">Unsubscribe</a> | <a href="#" style="color: #9333ea;">Privacy Policy</a></p>\n</div>'
-          ], (err) => {
-            if (err) {
-              console.error('Error inserting default global settings:', err.message);
-            }
-          });
-        }
-      });
-      db.run("UPDATE users SET firstName = 'Super', lastName = 'Admin', email = 'superadmin@sudi.app' WHERE username = 'superadmin' AND (firstName IS NULL OR lastName IS NULL OR email IS NULL)");
-    }
-  });
-});
+  db.run(`CREATE TABLE IF NOT EXISTS departments (id TEXT PRIMARY KEY, name TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS participants (id TEXT PRIMARY KEY, name TEXT, email TEXT, role TEXT, departmentId TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS templates (id TEXT PRIMARY KEY, name TEXT, subject TEXT, body TEXT, category TEXT, ecardBackdropPath TEXT, nameX INTEGER, nameY INTEGER, nameFontSize INTEGER, nameColor TEXT, roleX INTEGER, roleY INTEGER, roleFontSize INTEGER, roleColor TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS blast_history (id TEXT PRIMARY KEY, templateName TEXT, subject TEXT, recipientGroup TEXT, recipientCount INTEGER, sentDate TEXT, status TEXT, scheduledDate TEXT, deliveryRate REAL, openRate REAL, clickRate REAL, unsubscribeRate REAL, body TEXT, recipientIds TEXT, detailedRecipientActivity TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, email TEXT UNIQUE, firstName TEXT, lastName TEXT, role TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS settings (userId TEXT PRIMARY KEY)`);
+  db.run(`CREATE TABLE IF NOT EXISTS unsubscribed_emails (email TEXT PRIMARY KEY)`);
+  db.run(`CREATE TABLE IF NOT EXISTS activity_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT, action TEXT, details TEXT, timestamp TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS verification_codes (email TEXT PRIMARY KEY, code TEXT, expires INTEGER)`);
+          db.run(`CREATE TABLE IF NOT EXISTS global_settings (id INTEGER PRIMARY KEY DEFAULT 1, globalHeader TEXT, globalFooter TEXT)`);});
 
 app.post('/api/ecard-backdrops/folders', (req, res) => {
   const { folderName } = req.body;
@@ -372,21 +148,25 @@ app.post('/api/send-verification-code', async (req, res) => {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-  verificationCodes.set(email, { code, expires });
+  db.run('REPLACE INTO verification_codes (email, code, expires) VALUES (?, ?, ?)', [email, code, expires], async function(err) {
+    if (err) {
+      console.error('Error saving verification code:', err.message);
+      return res.status(500).json({ error: 'Failed to save verification code' });
+    }
 
-  try {
-    await transporter.sendMail({
-      from: `"SUDI Verification" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: 'Your SUDI Verification Code',
-      text: `Your verification code is: ${code}`,
-      html: `<b>Your verification code is: ${code}</b>`,
-    });
-    res.status(200).json({ message: 'Verification code sent' });
-  } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ error: 'Failed to send verification code' });
-  }
+    try {
+      await emailService.sendEmail({
+        to: email,
+        subject: 'Your SUDI Verification Code',
+        text: `Your verification code is: ${code}`,
+        html: `<b>Your verification code is: ${code}</b>`,
+      });
+      res.status(200).json({ message: 'Verification code sent' });
+    } catch (error: any) {
+      console.error('Error sending verification email:', error);
+      res.status(500).json({ error: 'Failed to send verification code', details: error.message });
+    }
+  });
 });
 
 app.post('/api/verify-code', (req, res) => {
@@ -395,26 +175,30 @@ app.post('/api/verify-code', (req, res) => {
     return res.status(400).json({ error: 'Email and code are required' });
   }
 
-  const stored = verificationCodes.get(email);
+  db.get('SELECT * FROM verification_codes WHERE email = ?', [email], (err, row: any) => {
+    if (err) {
+      console.error('Error fetching verification code:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch verification code' });
+    }
 
-  if (!stored) {
-    return res.status(400).json({ error: 'No verification code found for this email' });
-  }
+    if (!row) {
+      return res.status(400).json({ error: 'No verification code found for this email' });
+    }
 
-  if (stored.expires < Date.now()) {
-    verificationCodes.delete(email);
-    return res.status(400).json({ error: 'Verification code has expired' });
-  }
+    if (row.expires < Date.now()) {
+      db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
+      return res.status(400).json({ error: 'Verification code has expired' });
+    }
 
-  if (stored.code === code) {
-    verificationCodes.delete(email);
-    res.status(200).json({ message: 'Email verified successfully' });
-  } else {
-    res.status(400).json({ error: 'Invalid verification code' });
-  }
+    if (row.code === code) {
+      db.run('DELETE FROM verification_codes WHERE email = ?', [email]);
+      res.status(200).json({ message: 'Email verified successfully' });
+    } else {
+      res.status(400).json({ error: 'Invalid verification code' });
+    }
+  });
 });
 
-// Departments API
 app.get('/api/departments', (req, res) => {
   db.all('SELECT * FROM departments', [], (err, rows) => {
     if (err) {
@@ -432,6 +216,7 @@ app.post('/api/departments', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Department Creation', `Department ${name} created`);
     res.json({ id, name });
   });
 });
@@ -443,6 +228,7 @@ app.put('/api/departments/:id', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Department Update', `Department ${req.params.id} updated to ${name}`);
     res.json({ id: req.params.id, name });
   });
 });
@@ -453,11 +239,11 @@ app.delete('/api/departments/:id', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Department Deletion', `Department ${req.params.id} deleted`);
     res.json({ deletedID: req.params.id });
   });
 });
 
-// Participants API
 app.get('/api/participants', (req, res) => {
   db.all('SELECT * FROM participants', [], (err, rows) => {
     if (err) {
@@ -475,6 +261,7 @@ app.post('/api/participants', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Participant Creation', `Participant ${name} created`);
     res.json({ id, name, email, role, departmentId });
   });
 });
@@ -486,6 +273,7 @@ app.put('/api/participants/:id', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Participant Update', `Participant ${req.params.id} (${name}) updated`);
     res.json({ id: req.params.id, name, email, role, departmentId });
   });
 });
@@ -496,6 +284,7 @@ app.delete('/api/participants/:id', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Participant Deletion', `Participant ${req.params.id} deleted`);
     res.json({ deletedID: req.params.id });
   });
 });
@@ -531,20 +320,34 @@ app.post('/api/blast', async (req, res) => {
       });
     });
 
-    for (const recipient of recipients) {
-      const personalizedBody = template.body.replace(/{name}/g, recipient.name).replace(/{email}/g, recipient.email).replace(/{role}/g, recipient.role);
-      const fullHtml = `${globalHeader}${personalizedBody}${globalFooter}`;
+    const unsubscribedEmails = await new Promise<string[]>((resolve, reject) => {
+      db.all('SELECT email FROM unsubscribed_emails', [], (err, rows: { email: string }[]) => {
+        if (err) reject(err);
+        resolve(rows.map(row => row.email));
+      });
+    });
 
-      let mailOptions: nodemailer.SendMailOptions = {
-        from: `"${senderProfile.name}" <${process.env.SMTP_USER}>`,
-        replyTo: senderProfile.email,
+    for (const recipient of recipients) {
+      if (!recipient.email) {
+        console.log(`Skipping recipient with no email: ${recipient.name}`);
+        continue;
+      }
+
+      if (unsubscribedEmails.includes(recipient.email)) {
+        console.log(`Skipping unsubscribed recipient: ${recipient.email}`);
+        continue;
+      }
+
+                              const personalizedBody = template.body.replace(/{name}/g, recipient.name).replace(/{email}/g, recipient.email).replace(/{role}/g, recipient.role);
+                              const unsubscribeLink = `${req.protocol}://${req.get('host')}/api/unsubscribe?email=${encodeURIComponent(recipient.email)}`;
+                              const fullHtml = `${globalHeader}${personalizedBody}${globalFooter}`.replace(/{unsubscribe_link}/g, unsubscribeLink);      let mailOptions: nodemailer.SendMailOptions = {
         to: recipient.email,
         subject: template.subject,
         html: fullHtml,
       };
 
       if (template.ecardBackdropPath) {
-        const backdropPath = path.join(__dirname, template.ecardBackdropPath);
+        const backdropPath = path.join(__dirname, '..', template.ecardBackdropPath);
         const backdropImageUrl = `data:image/png;base64,${fs.readFileSync(backdropPath, 'base64')}`;
 
         const pdfBase64 = await generateEcardPdf({
@@ -572,7 +375,7 @@ app.post('/api/blast', async (req, res) => {
         ];
       }
 
-      await transporter.sendMail(mailOptions);
+      await emailService.sendBlastEmail(mailOptions, senderProfile);
     }
 
     const detailedRecipientActivity = recipients.map(r => ({ participantId: r.id, name: r.name, email: r.email, status: 'Sent' }));
@@ -604,7 +407,6 @@ app.post('/api/blast', async (req, res) => {
   }
 });
 
-// Templates API
 app.get('/api/templates', (req, res) => {
   db.all('SELECT * FROM templates', [], (err, rows) => {
     if (err) {
@@ -627,6 +429,7 @@ app.post('/api/templates', (req, res) => {
         res.status(500).json({ error: err.message });
         return;
       }
+      logActivity('System', 'Template Creation', `Template ${name} created`);
       res.json(row);
     });
   });
@@ -644,22 +447,34 @@ app.put('/api/templates/:id', (req, res) => {
         res.status(500).json({ error: err.message });
         return;
       }
+      logActivity('System', 'Template Update', `Template ${req.params.id} (${name}) updated`);
       res.json(row);
     });
   });
 });
 
-app.get('/api/history', (req, res) => {
+app.get('/api/history', authenticateToken, (req, res) => {
   db.all('SELECT * FROM blast_history ORDER BY sentDate DESC', [], (err, rows: any[]) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-    const history = rows.map(row => ({
-      ...row,
-      detailedRecipientActivity: JSON.parse(row.detailedRecipientActivity || '[]'),
-      recipientIds: JSON.parse(row.recipientIds || '[]'),
-    }));
+    const history = rows.map(row => {
+      try {
+        return {
+          ...row,
+          detailedRecipientActivity: JSON.parse(row.detailedRecipientActivity || '[]'),
+          recipientIds: JSON.parse(row.recipientIds || '[]'),
+        };
+      } catch (e) {
+        console.error(`Failed to parse history row with id ${row.id}:`, e);
+        return {
+          ...row,
+          detailedRecipientActivity: [],
+          recipientIds: [],
+        };
+      }
+    });
     res.json(history);
   });
 });
@@ -670,37 +485,35 @@ app.delete('/api/templates/:id', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'Template Deletion', `Template ${req.params.id} deleted`);
     res.json({ deletedID: req.params.id });
+  });
+});
+
+app.delete('/api/history/reset', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
+  if (req.user?.role !== 'SuperAdmin') {
+    return res.status(403).json({ error: 'Forbidden: Only Super Admins can perform this action.' });
+  }
+
+  db.run('DELETE FROM blast_history', function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    logActivity(req.user.username, 'History Reset', 'All blast history has been deleted.');
+    res.status(200).json({ message: 'Blast history has been successfully reset.' });
   });
 });
 
 app.post('/api/register', (req, res) => {
   const { username, password, email, firstName, lastName, confirmPassword } = req.body;
 
-  // Validation
   if (!username || !password || !email || !firstName || !lastName || !confirmPassword) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
   if (password !== confirmPassword) {
     return res.status(400).json({ error: 'Passwords do not match' });
-  }
-
-  // Password strength validation
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-  }
-  if (!/[A-Z]/.test(password)) {
-    return res.status(400).json({ error: 'Password must include at least one uppercase letter' });
-  }
-  if (!/[a-z]/.test(password)) {
-    return res.status(400).json({ error: 'Password must include at least one lowercase letter' });
-  }
-  if (!/\d/.test(password)) {
-    return res.status(400).json({ error: 'Password must include at least one number' });
-  }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return res.status(400).json({ error: 'Password must include at least one special character' });
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -722,6 +535,7 @@ app.post('/api/register', (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    logActivity('System', 'User Registration', `User ${username} created`);
     res.json({ id: this.lastID, username, email, firstName, lastName });
   });
 });
@@ -743,13 +557,13 @@ app.post('/api/login', (req, res) => {
       return;
     }
     const token = jwt.sign({ id: user.id, username: user.username, role: user.role, firstName: user.firstName, lastName: user.lastName, email: user.email }, process.env.JWT_SECRET || 'secret', { expiresIn: 86400 });
+    logActivity(user.username, 'User Login', `User ${user.username} logged in`);
     res.status(200).json({ auth: true, token });
   });
 });
 
-// User Settings API
 app.get('/api/user/settings', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   db.get('SELECT * FROM settings WHERE userId = ?', [userId], (err, row: any) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -758,19 +572,16 @@ app.get('/api/user/settings', authenticateToken, (req: AuthenticatedRequest, res
     if (row) {
       res.json(row);
     } else {
-      // Return default settings if none found
       res.json({ userId, globalHeader: '', globalFooter: '' });
     }
   });
 });
 
 app.put('/api/user/settings', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.userId;
-  // Currently no user-specific settings other than userId, but keeping the structure
+  const userId = req.user.id;
   res.status(200).json({ userId });
 });
 
-// Global Settings API (no authentication required for now, but could add admin check)
 app.get('/api/global-settings', (req, res) => {
   db.get('SELECT globalHeader, globalFooter FROM global_settings WHERE id = 1', [], (err, row: any) => {
     if (err) {
@@ -780,30 +591,41 @@ app.get('/api/global-settings', (req, res) => {
     if (row) {
       res.json(row);
     } else {
-      res.json({ globalHeader: '', globalFooter: '' }); // Default empty
+      res.json({ globalHeader: '', globalFooter: '' });
     }
   });
 });
 
 app.put('/api/global-settings', (req, res) => {
   const { globalHeader, globalFooter } = req.body;
-  db.run(
-    'UPDATE global_settings SET globalHeader = ?, globalFooter = ? WHERE id = 1',
-    [globalHeader, globalFooter],
-    function (err) {
+  db.run('UPDATE global_settings SET globalHeader = ?, globalFooter = ? WHERE id = 1', [globalHeader, globalFooter], function (err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    db.get('SELECT globalHeader, globalFooter FROM global_settings WHERE id = 1', [], (err, row) => {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      db.get('SELECT globalHeader, globalFooter FROM global_settings WHERE id = 1', [], (err, row) => {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        res.json(row);
-      });
+      res.json(row);
+    });
+  });
+});
+
+app.post('/api/unsubscribe', (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  db.run('INSERT OR IGNORE INTO unsubscribed_emails (email) VALUES (?)', [email], function(err) {
+    if (err) {
+      console.error('Error unsubscribing email:', err.message);
+      return res.status(500).json({ error: 'Failed to unsubscribe email' });
     }
-  );
+    res.status(200).json({ message: 'Email unsubscribed successfully' });
+  });
 });
 
 app.get('/api/users', (req, res) => {
@@ -816,16 +638,25 @@ app.get('/api/users', (req, res) => {
   });
 });
 
+app.get('/api/activity-logs', (req, res) => {
+    db.all('SELECT * FROM activity_logs ORDER BY timestamp DESC', [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
 app.delete('/api/users/:id', (req, res) => {
-  db.run('DELETE FROM users WHERE id = ?', req.params.id, function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({ deletedID: req.params.id });
-  });
+    db.run('DELETE FROM users WHERE id = ?', req.params.id, function (err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ deletedID: req.params.id });
+    });
 });
 
 app.listen(port, () => {
-  
+  console.log(`Backend server listening at http://localhost:${port}`);
 });

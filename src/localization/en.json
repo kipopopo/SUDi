@@ -20,12 +20,16 @@
   "historyManager": {
     "title": "Campaign Reports",
     "subtitle": "A log of all past and scheduled email campaigns.",
+    "resetButton": "Clear History",
     "noHistory": "No email blasts have been sent or scheduled yet.",
     "status": "Status",
     "recipients": "Recipients",
     "sentOn": "Sent On",
     "scheduledFor": "Scheduled For",
     "viewReport": "View Report",
+    "sentTo": "Sent to",
+    "delivered": "Delivered",
+    "opens": "Opens",
     "reportModal": {
       "title": "- Report",
       "sentTo": "Sent to",

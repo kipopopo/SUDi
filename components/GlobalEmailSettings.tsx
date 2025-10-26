@@ -6,18 +6,12 @@ import { useSettings } from '../contexts/SettingsContext';
 const GlobalEmailSettings: React.FC = () => {
   const { t } = useTranslation();
   const { globalSettings, setGlobalSettings } = useSettings();
-  const [globalHeader, setGlobalHeader] = useState(globalSettings.globalHeader);
-  const [globalFooter, setGlobalFooter] = useState(globalSettings.globalFooter);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  useEffect(() => {
-    setGlobalHeader(globalSettings.globalHeader);
-    setGlobalFooter(globalSettings.globalFooter);
-  }, [globalSettings]);
+
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setGlobalSettings(prev => ({ ...prev, globalHeader, globalFooter }));
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   };
@@ -31,8 +25,8 @@ const GlobalEmailSettings: React.FC = () => {
           <textarea
             id="globalHeader"
             rows={6}
-            value={globalHeader}
-            onChange={(e) => setGlobalHeader(e.target.value)}
+            value={globalSettings.globalHeader}
+            onChange={(e) => setGlobalSettings(prev => ({ ...prev, globalHeader: e.target.value }))}
             className="w-full bg-light-bg dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent font-mono text-sm"
             placeholder={t('globalEmailSettings.headerPlaceholder')}
           />
@@ -42,8 +36,8 @@ const GlobalEmailSettings: React.FC = () => {
           <textarea
             id="globalFooter"
             rows={6}
-            value={globalFooter}
-            onChange={(e) => setGlobalFooter(e.target.value)}
+            value={globalSettings.globalFooter}
+            onChange={(e) => setGlobalSettings(prev => ({ ...prev, globalFooter: e.target.value }))}
             className="w-full bg-light-bg dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent font-mono text-sm"
             placeholder={t('globalEmailSettings.footerPlaceholder')}
           />

@@ -18,6 +18,9 @@ const DepartmentsManager: React.FC<DepartmentsManagerProps> = ({ isSidebarCollap
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
 
   const departmentsWithCounts = useMemo(() => {
+    if (!Array.isArray(departments)) {
+      return [];
+    }
     return departments.map(dept => ({
       ...dept,
       participantCount: participants.filter(p => p.departmentId === dept.id).length

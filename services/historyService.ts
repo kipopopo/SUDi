@@ -26,14 +26,14 @@ const HISTORY_STORAGE_KEY = 'sudi_blast_history';
  * It safely parses the JSON data and returns an array of history items.
  * @returns {BlastHistoryItem[]} An array of blast history items, or an empty array if none exists or an error occurs.
  */
-export const getHistory = (): BlastHistoryItem[] => {
-  try {
-    const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY);
-    return historyJson ? JSON.parse(historyJson) : [];
-  } catch (error) {
-    console.error("Failed to parse blast history:", error);
-    return [];
-  }
+export const getHistory = async (): Promise<BlastHistoryItem[]> => {
+  const response = await api.get('/history');
+  return response.data;
+};
+
+export const resetHistory = async () => {
+  const response = await api.delete('/history/reset');
+  return response.data;
 };
 
 /**

@@ -8,6 +8,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { ModalProvider } from './contexts/ModalContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './src/i18n';
 
 // Find the root DOM element where the React application will be mounted.
 const rootElement = document.getElementById('root');
@@ -27,17 +29,19 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <ThemeProvider>
-        <AuthProvider>
-          <DataProvider>
-            <SettingsProvider>
-              <ModalProvider>
-                <App />
-              </ModalProvider>
-            </SettingsProvider>
-          </DataProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider>
+          <AuthProvider>
+            <DataProvider>
+              <SettingsProvider>
+                <ModalProvider>
+                  <App />
+                </ModalProvider>
+              </SettingsProvider>
+            </DataProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </I18nextProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

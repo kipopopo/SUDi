@@ -6,15 +6,17 @@ import { useData } from '../contexts/DataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { generateEcardPdf } from '../utils/ecardGenerator';
 
-const BlastManager: React.FC = () => {
+export const BlastManager: React.FC = () => {
     const { templates, departments, participants, refreshHistory } = useData();
-    const { settings, senderProfile } = useSettings();
+    const { globalSettings, senderProfile } = useSettings();
     const [status, setStatus] = useState<'idle' | 'blasting' | 'success'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
     const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('all');
     const [isConfirming, setIsConfirming] = useState(false);
     const [generatedPdfPreview, setGeneratedPdfPreview] = useState<string | null>(null);
+
+
 
     const isSenderVerified = senderProfile?.verified === true;
 
@@ -93,8 +95,8 @@ const BlastManager: React.FC = () => {
                 recipientIds: recipients.map(r => r.id),
                 senderProfile,
                 blastDetails,
-                globalHeader: settings.globalHeader,
-                globalFooter: settings.globalFooter,
+                globalHeader: globalSettings?.globalHeader || '',
+                globalFooter: globalSettings?.globalFooter || '',
             });
 
             setStatus('success');
@@ -122,7 +124,7 @@ const BlastManager: React.FC = () => {
             .replace(/{role}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">role</span>')
             .replace(/{paEmail}/g, '<span class="bg-yellow-200 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-300 px-1 py-0.5 rounded text-xs font-mono">paEmail</span>');
         
-        const fullContent = `${settings.globalHeader}${bodyWithPlaceholders}${settings.globalFooter}`;
+        const fullContent = `${globalSettings?.globalHeader || ''}${bodyWithPlaceholders}${globalSettings?.globalFooter || ''}`;
         return `<div style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"> ${fullContent} </div>`;
     }
 
@@ -176,10 +178,10 @@ const BlastManager: React.FC = () => {
                                 <select 
                                     value={selectedTemplateId}
                                     onChange={(e) => setSelectedTemplateId(e.target.value)}
-                                    className="w-full bg-light-bg dark:bg-brand-light/50 p-3 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
+                                    className="w-full bg-light-bg dark:bg-brand-light/50 p-3 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent dark:text-white"
                                 >
                                     <option value="" disabled>-- Choose a template --</option>
-                                    {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)} 
+                                    {templates.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).map(t => <option key={t.id} value={t.id}>{t.name}</option>)} 
                                 </select>
                             </div>
                             <div>
@@ -187,10 +189,10 @@ const BlastManager: React.FC = () => {
                                 <select 
                                     value={selectedDepartmentId}
                                     onChange={(e) => setSelectedDepartmentId(e.target.value)}
-                                    className="w-full bg-light-bg dark:bg-brand-light/50 p-3 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
+                                    className="w-full bg-light-bg dark:bg-brand-light/50 p-3 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent dark:text-white"
                                 >
                                     <option value="all">All Departments ({participants.length} recipients)</option>
-                                    {departments.map(d => {
+                                    {departments.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).map(d => {
                                         const count = participants.filter(p => p.departmentId === d.id).length;
                                         return <option key={d.id} value={d.id}>{d.name} ({count} recipients)</option>
                                     })}

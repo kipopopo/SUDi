@@ -67,7 +67,7 @@ const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ isSubscribed,
                     </div>
                     <p className="text-light-text-secondary dark:text-brand-text-secondary mb-6">For power users and teams</p>
                     
-                    <p className="text-4xl font-extrabold mb-6 font-title">$5<span className="text-lg font-medium text-light-text-secondary dark:text-brand-text-secondary">/month</span></p>
+                    <p className="text-4xl font-extrabold mb-6 font-title dark:text-white">$5<span className="text-lg font-medium text-light-text-secondary dark:text-brand-text-secondary">/month</span></p>
 
                     <ul className="space-y-3 mb-8 text-light-text dark:text-white">
                         <PlanFeature><strong>Unlimited</strong> AI Actions</PlanFeature>

@@ -40,24 +40,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         </div>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.usernameLabel')}</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.passwordLabel')}</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent"
-            />
-          </div>
+                    <div>
+                      <label htmlFor="username" className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.usernameLabel')}</label>
+                      <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                    </div>
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-light-text-secondary dark:text-brand-text-secondary mb-1">{t('loginPage.passwordLabel')}</label>
+                      <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-light-bg dark:bg-brand-light/50 p-2 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent" />
+                    </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input

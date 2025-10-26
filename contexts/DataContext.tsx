@@ -26,15 +26,58 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshHistory = useCallback(() => {
     if (isAuthenticated) {
-      api.get('/history').then(response => setHistory(response.data));
+      api.get('/history').then(response => {
+        if (Array.isArray(response.data)) {
+          setHistory(response.data);
+        } else {
+          console.error("API did not return an array for history:", response.data);
+          setHistory([]); // Set to empty array to prevent crashes
+        }
+      }).catch(error => {
+        console.error("Failed to fetch history:", error);
+        setHistory([]); // Also set to empty on API error
+      });
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      api.get('/departments').then(response => setDepartments(response.data));
-      api.get('/participants').then(response => setParticipants(response.data));
-      api.get('/templates').then(response => setTemplates(response.data));
+      api.get('/departments').then(response => {
+        if (Array.isArray(response.data)) {
+          setDepartments(response.data);
+        } else {
+          console.error("API did not return an array for departments:", response.data);
+          setDepartments([]);
+        }
+      }).catch(error => {
+        console.error("Failed to fetch departments:", error);
+        setDepartments([]);
+      });
+
+      api.get('/participants').then(response => {
+        if (Array.isArray(response.data)) {
+          setParticipants(response.data);
+        } else {
+          console.error("API did not return an array for participants:", response.data);
+          setParticipants([]);
+        }
+      }).catch(error => {
+        console.error("Failed to fetch participants:", error);
+        setParticipants([]);
+      });
+
+      api.get('/templates').then(response => {
+        if (Array.isArray(response.data)) {
+          setTemplates(response.data);
+        } else {
+          console.error("API did not return an array for templates:", response.data);
+          setTemplates([]);
+        }
+      }).catch(error => {
+        console.error("Failed to fetch templates:", error);
+        setTemplates([]);
+      });
+
       refreshHistory();
     }
   }, [isAuthenticated, refreshHistory]);

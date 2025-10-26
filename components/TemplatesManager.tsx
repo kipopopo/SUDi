@@ -758,6 +758,15 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                             </div>
                         </div>
 
+                        {/* Email Body Editor */}
+                        <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
+                            <h3 className="text-lg font-bold text-light-text dark:text-white">Email Body</h3>
+                            <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
+                                <MenuBar editor={editor} placeholders={placeholders} />
+                                <EditorContent editor={editor} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
+                            </div>
+                        </div>
+
                         {/* E-Card Settings */}
                         <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
                             <h3 className="text-lg font-bold text-light-text dark:text-white">E-Card Settings</h3>
@@ -812,15 +821,6 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                                 <button onClick={handleGeneratePdfPreview} className="w-full mt-4 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
                                     <span>Generate E-card Preview</span>
                                 </button>
-                            </div>
-                        </div>
-
-                        {/* Email Body Editor */}
-                        <div className="bg-light-bg dark:bg-brand-light/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 space-y-4">
-                            <h3 className="text-lg font-bold text-light-text dark:text-white">Email Body</h3>
-                            <div className="tiptap-wrapper rounded-md border border-light-border dark:border-brand-light">
-                                <MenuBar editor={editor} placeholders={placeholders} />
-                                <EditorContent editor={editor} className="w-full h-full min-h-[300px] bg-light-bg dark:bg-brand-light/50 text-sm overflow-y-auto" />
                             </div>
                         </div>
 

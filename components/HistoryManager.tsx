@@ -1,10 +1,40 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BlastHistoryItem, RecipientActivity } from '../types';
-import { CloseIcon, CheckCircleIcon, HistoryIcon, EyeIcon, CursorClickIcon, UserRemoveIcon, MailOpenIcon, DownloadIcon, LoadingIcon } from './common/Icons';
+import { CloseIcon, CheckCircleIcon, HistoryIcon, EyeIcon, CursorClickIcon, UserRemoveIcon, MailOpenIcon, DownloadIcon, LoadingIcon, DeleteIcon } from './common/Icons';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
+import { resetHistory } from '../services/historyService';
 
 interface HistoryManagerProps {}
+
+const HistoryItemCard: React.FC<{ item: BlastHistoryItem; onReportClick: () => void; }> = ({ item, onReportClick }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="bg-light-surface dark:bg-brand-dark/50 border border-light-border dark:border-brand-light/20 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-grow">
+                <h3 className="font-bold text-light-text dark:text-white">{item.templateName}</h3>
+                <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary">
+                    {t('historyManager.sentTo')} <strong>{item.recipientGroup}</strong> ({item.recipientCount} {t('historyManager.recipients')}) - {new Date(item.sentDate).toLocaleString()}
+                </p>
+            </div>
+            <div className="flex items-center space-x-4 flex-shrink-0 w-full sm:w-auto">
+                <div className="text-center">
+                    <p className="font-bold text-sm text-light-text dark:text-white">{item.deliveryRate}%</p>
+                    <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary">{t('historyManager.delivered')}</p>
+                </div>
+                <div className="text-center">
+                    <p className="font-bold text-sm text-light-text dark:text-white">{item.openRate}%</p>
+                    <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary">{t('historyManager.opens')}</p>
+                </div>
+                <button onClick={onReportClick} className="bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition text-sm flex items-center space-x-2">
+                    <EyeIcon />
+                    <span>{t('historyManager.viewReport')}</span>
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> = ({ report, onClose }) => {
     const { t } = useTranslation();
@@ -291,95 +321,65 @@ const ReportModal: React.FC<{ report: BlastHistoryItem; onClose: () => void }> =
     );
 };
 
+
+
+
 const HistoryManager: React.FC<HistoryManagerProps> = () => {
     const { t } = useTranslation();
-    const { history } = useData();
+    const { history, setHistory, isLoading } = useData();
+    const { user } = useAuth();
     const [selectedReport, setSelectedReport] = useState<BlastHistoryItem | null>(null);
 
-    const formatDateTime = (isoString: string | undefined) => {
-        if (!isoString) return '—';
-        return new Date(isoString).toLocaleString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+    const handleResetHistory = async () => {
+        if (window.confirm('Are you sure you want to permanently delete all blast history? This action cannot be undone.')) {
+            try {
+                await resetHistory();
+                // @ts-ignore
+                setHistory([]); // Clear history in the UI
+            } catch (error) {
+                console.error("Failed to reset history:", error);
+            }
+        }
     };
 
-    const StatusBadge: React.FC<{ status: BlastHistoryItem['status'] }> = ({ status }) => (
-        <span className={`px-3 py-1 text-xs font-bold rounded-full ${status === 'Completed' ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : status === 'Scheduled' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-            }`}>
-            {status}
-        </span>
-    );
-    
     const sortedHistory = useMemo(() => {
-        return [...history].sort((a, b) => {
-            const dateA = new Date(a.scheduledDate || a.sentDate || 0).getTime();
-            const dateB = new Date(b.scheduledDate || b.sentDate || 0).getTime();
-            return dateB - dateA;
-        });
+        return [...history].sort((a, b) => new Date(b.sentDate).getTime() - new Date(a.sentDate).getTime());
     }, [history]);
 
     return (
-        <>
-            <div className="animate-fade-in">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold font-title dark:text-white">{t('historyManager.title')}</h1>
-                    <p className="text-light-text-secondary dark:text-brand-text-secondary mt-2">{t('historyManager.subtitle')}</p>
-                </div>
-
-                <div className="space-y-4">
-                    {sortedHistory.length > 0 ? (
-                        sortedHistory.map((item) => (
-                            <div key={item.id} className="bg-light-surface dark:bg-brand-dark/50 p-4 rounded-lg border border-light-border dark:border-brand-light/20 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                <div className="flex-grow">
-                                    <div className="flex items-center space-x-4">
-                                        <div className={`p-2 rounded-full ${item.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                                            {item.status === 'Completed' ? <CheckCircleIcon /> : <HistoryIcon />}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-light-text dark:text-white">{item.templateName}</h3>
-                                            <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary truncate max-w-sm">{item.subject}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <div className="flex-shrink-0 flex flex-wrap items-start justify-center md:justify-start gap-x-6 gap-y-4 text-sm text-center md:text-left">
-                                         <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{t('historyManager.status')}</p>
-                                            <div className="mt-1"><StatusBadge status={item.status} /></div>
-                                         </div>
-                                          <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{t('historyManager.recipients')}</p>
-                                            <p className="font-medium mt-1">{item.recipientCount}</p>
-                                         </div>
-                                          <div>
-                                            <p className="font-semibold text-light-text-secondary dark:text-brand-text-secondary text-xs uppercase tracking-wider">{item.status === 'Scheduled' ? t('historyManager.scheduledFor') : t('historyManager.sentOn')}</p>
-                                            <p className="font-medium mt-1 whitespace-nowrap">{formatDateTime(item.status === 'Scheduled' ? item.scheduledDate : item.sentDate)}</p>
-                                         </div>
-                                    </div>
-                                     <div className="flex-shrink-0 md:border-l md:pl-4 border-light-border dark:border-brand-light/20">
-                                        <button
-                                            onClick={() => setSelectedReport(item)}
-                                            disabled={item.status === 'Scheduled'}
-                                            className="w-full md:w-auto bg-brand-accent-purple/10 text-brand-accent-purple dark:bg-brand-accent/10 dark:text-brand-accent font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-80 dark:hover:bg-opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <span>{t('historyManager.viewReport')}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center p-12 text-light-text-secondary dark:text-brand-text-secondary bg-light-surface dark:bg-brand-dark/50 rounded-lg">
-                            {t('historyManager.noHistory')}
-                        </div>
-                    )}
-                </div>
+        <div className="animate-fade-in">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl sm:text-4xl font-bold font-title dark:text-white">{t('historyManager.title')}</h1>
+                {user?.role === 'SuperAdmin' && (
+                    <button 
+                        onClick={handleResetHistory}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
+                    >
+                        <DeleteIcon />
+                        <span>{t('historyManager.resetButton')}</span>
+                    </button>
+                )}
             </div>
+
+            {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                    <LoadingIcon className="w-12 h-12" />
+                </div>
+            ) : history.length === 0 ? (
+                <div className="text-center py-16 bg-light-bg dark:bg-brand-dark/30 rounded-lg">
+                    <HistoryIcon className="mx-auto w-12 h-12 text-light-text-secondary dark:text-brand-text-secondary" />
+                    <h3 className="mt-4 text-lg font-semibold text-light-text dark:text-white">{t('historyManager.noHistory')}</h3>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {sortedHistory.map(item => (
+                        <HistoryItemCard key={item.id} item={item} onReportClick={() => setSelectedReport(item)} />
+                    ))}
+                </div>
+            )}
+
             {selectedReport && <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)} />}
-        </>
+        </div>
     );
 };
 

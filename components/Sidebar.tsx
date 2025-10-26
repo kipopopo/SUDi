@@ -105,14 +105,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, isCollapsed
                 <SettingsIcon className="w-5 h-5" />
                 <span className={`text-sm ${spanClasses}`}>Settings</span>
           </NavLink>
-          {user?.role === 'SuperAdmin' && (
-            <NavLink to="/users" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Users">
-              <UsersIcon className="w-5 h-5" />
-              <span className={`text-sm ${spanClasses}`}>Users</span>
-            </NavLink>
-          )}
 
-          <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Configuration</p>
+          {user?.role === 'SuperAdmin' && (
+            <>
+              <p className={`px-2 pt-4 pb-2 text-xs font-semibold uppercase text-light-text-secondary/70 dark:text-brand-text-secondary/60 tracking-wider ${spanClasses}`}>Super Admin</p>
+              <NavLink to="/users" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Users">
+                <UsersIcon className="w-5 h-5" />
+                <span className={`text-sm ${spanClasses}`}>Users</span>
+              </NavLink>
+              <NavLink to="/activity-log" className={({ isActive }) => linkClasses(isActive)} onClick={handleNavClick} title="Activity Log">
+                <HistoryIcon className="w-5 h-5" />
+                <span className={`text-sm ${spanClasses}`}>Activity Log</span>
+              </NavLink>
+            </>
+          )}
 
 
         </nav>

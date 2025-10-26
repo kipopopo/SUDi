@@ -7,7 +7,8 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 
-import { AppSettings } from '../types';
+import { AppSettings, SenderProfile } from '../types';
+import axios from 'axios';
 import { AlignCenterIcon, AlignLeftIcon, AlignRightIcon, LinkIcon, ListOrderedIcon, ListUnorderedIcon, QuoteIcon, CheckCircleIcon, ImageIcon, HorizontalRuleIcon, UserIcon, LockIcon, BellIcon, BrushIcon, DangerIcon, UploadIcon, MailIcon, HistoryIcon, LoadingIcon } from './common/Icons';
 import ProfileSettings from './ProfileSettings';
 import { useSettings } from '../contexts/SettingsContext';
@@ -60,10 +61,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
     return (
         <div className="tiptap-wrapper flex flex-wrap items-center gap-1 p-2 border border-light-border dark:border-brand-light/20 border-b-0 rounded-t-md bg-light-surface dark:bg-brand-dark">
-            <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}><b>B</b></button>
-            <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'is-active' : ''}><i>I</i></button>
-            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? 'is-active' : ''}><u>U</u></button>
-            <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'is-active' : ''}><s>S</s></button>
+            <button onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={`${editor.isActive('bold') ? 'is-active' : ''} dark:text-white`}><b>B</b></button>
+            <button onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={`${editor.isActive('italic') ? 'is-active' : ''} dark:text-white`}><i>I</i></button>
+            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={`${editor.isActive('underline') ? 'is-active' : ''} dark:text-white`}><u>U</u></button>
+            <button onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={`${editor.isActive('strike') ? 'is-active' : ''} dark:text-white`}><s>S</s></button>
             <div className="divider"></div>
             <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}><ListUnorderedIcon /></button>
             <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive('orderedList') ? 'is-active' : ''}><ListOrderedIcon /></button>
@@ -85,8 +86,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
 interface SettingsManagerProps {}
 
 const SettingsManager: React.FC<SettingsManagerProps> = () => {
-    const { settings, setSettings } = useSettings();
-    const [localSettings, setLocalSettings] = useState<AppSettings>(settings);
+    const { globalSettings, setGlobalSettings } = useSettings();
     const [showSuccess, setShowSuccess] = useState(false);
     const [activeSection, setActiveSection] = useState('profile');
 
@@ -107,9 +107,9 @@ const SettingsManager: React.FC<SettingsManagerProps> = () => {
             case 'password':
                 return <PasswordSection />;
             case 'email':
-                return <EmailSettingsContent settings={settings || {}} setSettings={setSettings} />;
+                return <EmailSettingsContent globalSettings={globalSettings || {}} setGlobalSettings={setGlobalSettings} />;
             case 'sender':
-                return <SenderSetupContent settings={settings || {}} setSettings={setSettings} />;
+                return <SenderSetupContent />; 
             case 'theme':
                 return <ThemeSection />;
             case 'notifications':
@@ -158,6 +158,7 @@ const SettingsManager: React.FC<SettingsManagerProps> = () => {
 export default SettingsManager;
 
 const SenderSetupContent: React.FC = () => {
+    type VerificationStatus = 'unverified' | 'pending' | 'verified';
     const { senderProfile, setSenderProfile } = useSettings();
     const [name, setName] = useState(senderProfile?.name || '');
     const [email, setEmail] = useState(senderProfile?.email || '');
@@ -199,7 +200,7 @@ const SenderSetupContent: React.FC = () => {
         
         setIsLoading(true);
         try {
-            // await axios.post('/api/send-verification-code', { email }); // Re-enable when backend is ready
+            await axios.post('/api/send-verification-code', { email });
             setStatus('pending');
         } catch (err) {
             setError('Failed to send verification code. Please try again later.');
@@ -217,7 +218,7 @@ const SenderSetupContent: React.FC = () => {
 
         setIsLoading(true);
         try {
-            // await axios.post('/api/verify-code', { email, code: verificationCode }); // Re-enable when backend is ready
+            await axios.post('/api/verify-code', { email, code: verificationCode });
             const newProfile: SenderProfile = { name: name.trim(), email: email.trim(), verified: true };
             setSenderProfile(newProfile);
             setOriginalEmail(email);
@@ -331,8 +332,8 @@ const SenderSetupContent: React.FC = () => {
 
 // --- Sections ---
 
-const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React.Dispatch<React.SetStateAction<AppSettings>> }> = ({ settings, setSettings }) => {
-    const [localSettings, setLocalSettings] = useState<AppSettings>(settings || {});
+const EmailSettingsContent: React.FC<{ globalSettings: AppSettings; setGlobalSettings: React.Dispatch<React.SetStateAction<AppSettings>> }> = ({ globalSettings, setGlobalSettings }) => {
+    const [localSettings, setLocalSettings] = useState<AppSettings>(globalSettings || {});
     const [showSuccess, setShowSuccess] = useState(false);
 
     const headerEditor = useEditor({
@@ -340,7 +341,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
             StarterKit, Underline, Link, Image, TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Placeholder.configure({ placeholder: 'Enter your global email header HTML here...' })
         ],
-        content: settings?.globalHeader || '',
+        content: globalSettings?.globalHeader || '',
     });
 
     const footerEditor = useEditor({
@@ -348,20 +349,15 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
             StarterKit, Underline, Link, Image, TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Placeholder.configure({ placeholder: 'Enter your global email footer HTML here...' })
         ],
-        content: settings?.globalFooter || '',
+        content: globalSettings?.globalFooter || '',
     });
 
-    useEffect(() => {
-        // When the main settings prop changes (e.g., initial load or discard), reset editors
-        if (headerEditor && !headerEditor.isDestroyed) headerEditor.commands.setContent(settings.globalHeader, false);
-        if (footerEditor && !footerEditor.isDestroyed) footerEditor.commands.setContent(settings.globalFooter, false);
-        setLocalSettings(settings); // Also reset the local state for preview
-    }, [settings, headerEditor, footerEditor]);
+
 
     const handleSave = () => {
         if (!headerEditor || !footerEditor) return;
 
-        setSettings(prev => ({
+        setGlobalSettings(prev => ({
             ...prev,
             globalHeader: headerEditor.getHTML(),
             globalFooter: footerEditor.getHTML(),
@@ -371,10 +367,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
         setTimeout(() => setShowSuccess(false), 3000);
     };
 
-    const handleDiscard = () => {
-        // The useEffect hook will handle resetting the state and editors
-        setSettings({ ...settings }); 
-    };
+
     
     // Live preview for header/footer as user types
     useEffect(() => {
@@ -421,7 +414,8 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
                         <div className="bg-slate-100 dark:bg-brand-darker rounded-lg p-4 h-[420px] overflow-y-auto">
                            <div
                                 dangerouslySetInnerHTML={{ __html: localSettings.globalHeader }}
-                                style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6', color: '#333' }}
+                                className="text-light-text dark:text-brand-text"
+                                style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6' }}
                             />
                             <div className="my-4 p-4 border-2 border-dashed border-slate-300 dark:border-brand-light/40 rounded-md text-center text-slate-400 dark:text-brand-text-secondary">
                                 <p className="font-semibold text-sm">Your unique email content will appear here.</p>
@@ -429,7 +423,8 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
                             </div>
                             <div
                                 dangerouslySetInnerHTML={{ __html: localSettings.globalFooter }}
-                                style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6', color: '#333' }}
+                                className="text-light-text dark:text-brand-text"
+                                style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.6' }}
                             />
                         </div>
                     </div>
@@ -443,12 +438,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
                         <span className="font-semibold">Settings saved!</span>
                     </div>
                 )}
-                <button 
-                    onClick={handleDiscard}
-                    className="text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition"
-                >
-                    Discard Changes
-                </button>
+
                 <button
                     onClick={handleSave}
                     className="bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition"
@@ -615,7 +605,7 @@ const EmailSettingsContent: React.FC<{ settings: AppSettings; setSettings: React
   
   const ThemeOption: React.FC<ThemeOptionProps> = ({ label, value, currentTheme, onChange }) => (
       <label className="flex items-center justify-between p-4 rounded-lg border border-light-border dark:border-brand-light/20 cursor-pointer transition-all hover:bg-light-hover dark:hover:bg-brand-light/10">
-          <span className="font-semibold">{label}</span>
+          <span className="font-semibold dark:text-white">{label}</span>
           <input
               type="radio"
               name="theme"

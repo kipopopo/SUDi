@@ -19,12 +19,23 @@ const SubscriptionManager = lazy(() => import('./components/SubscriptionManager'
 const BillingManager = lazy(() => import('./components/BillingManager'));
 const RegistrationPage = lazy(() => import('./components/RegistrationPage'));
 const UserManager = lazy(() => import('./components/UserManager'));
+const ActivityLog = lazy(() => import('./components/ActivityLog'));
 
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { AiUsage } from './types';
 import { getAiUsage } from './services/usageService';
 import { useTheme } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext';
+
+const AuthLayout: React.FC = () => (
+  <div className="w-full h-screen flex items-center justify-center">
+    <Suspense fallback={<div>Loading...</div>}>
+      <Outlet />
+    </Suspense>
+  </div>
+);
+
+import UserActivityLog from './components/UserActivityLog';
 
 const App: React.FC = () => {
   const { theme } = useTheme();
@@ -100,78 +111,86 @@ const App: React.FC = () => {
 
   const { isExplorerOpen, closeExplorer, onSelect } = useModal();
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className={`App ${theme} font-sans overflow-x-hidden`}>
-
       <div className="absolute top-0 left-0 w-96 h-96 bg-brand-accent-purple/10 dark:bg-brand-accent-purple/30 rounded-full filter blur-3xl opacity-50 animate-blob z-[-1]"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-brand-accent/10 dark:bg-brand-accent/30 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000 z-[-1]"></div>
       <div className="absolute bottom-0 -left-1/4 w-96 h-96 bg-brand-accent/5 dark:bg-brand-accent/20 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000 z-[-1]"></div>
       
-      <Suspense fallback={<div>Loading...</div>}>
-        {isLoading ? (
-          <div className="w-full h-screen flex items-center justify-center">
-            <div>Loading...</div>
-          </div>
-        ) : !isAuthenticated ? (
-          <div className="w-full h-screen flex items-center justify-center">
-            <Routes>
-              <Route path="/login" element={<LoginPage onLoginSuccess={(token, remember) => login(token, remember)} />} />
-              <Route path="/register" element={<RegistrationPage />} />
-              <Route path="*" element={<Navigate to="/login" />} />
-            </Routes>
-          </div>
+      <Routes>
+        {!isAuthenticated ? (
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage onLoginSuccess={(token, remember) => login(token, remember)} />} />
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Route>
         ) : (
-          <>
-            {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="lg:hidden fixed inset-0 bg-black/50 z-30"></div>}
+          <Route
+            path="/*"
+            element={
+              <>
+                {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="lg:hidden fixed inset-0 bg-black/50 z-30"></div>}
 
-            <Sidebar 
-              isOpen={isSidebarOpen} 
-              setIsOpen={setIsSidebarOpen}
-              isCollapsed={isSidebarCollapsed}
-              setIsCollapsed={setIsSidebarCollapsed}
-              aiUsage={aiUsage}
-              isSubscribed={isSubscribed}
-              timeUntilReset={timeUntilReset}
-              user={user}
-            />
-            
-            <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-              <Header 
-                handleLogout={logout} 
-                onMenuClick={() => setIsSidebarOpen(true)}
-                isModalOpen={showSubscriptionModal}
-                isSidebarCollapsed={isSidebarCollapsed}
-              />
-              <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto z-10">
-                <Routes>
-                  <Route path="/login" element={<Navigate to="/dashboard" />} />
-                  <Route path="/" element={<Navigate to="/dashboard" />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/participants" element={<ParticipantsManager {...commonAiProps} isSidebarCollapsed={isSidebarCollapsed} />} />
-                  <Route path="/departments" element={<DepartmentsManager isSidebarCollapsed={isSidebarCollapsed} />} />
-                  <Route path="/templates" element={<TemplatesManager {...commonAiProps} isSidebarCollapsed={isSidebarCollapsed} />} />
-                  <Route path="/blast" element={<BlastManager />} />
-                  <Route path="/history" element={<HistoryManager />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/subscription" element={<SubscriptionManager isSubscribed={isSubscribed} setIsSubscribed={setIsSubscribed} />} />
-                  <Route path="/billing" element={<BillingManager />} />
-          
-                  <Route path="/settings" element={<SettingsManager />} />
-                  <Route path="/settings/sender" element={<SenderSetup />} />
-                  <Route path="/users" element={<UserManager isSidebarCollapsed={isSidebarCollapsed} />} />
-                </Routes>
-              </main>
-            </div>
-            {showSubscriptionModal && (
-              <SubscriptionModal 
-                  onClose={() => setShowSubscriptionModal(false)}
-                  onSubscribe={handleSubscribe}
-                  isSidebarCollapsed={isSidebarCollapsed}
-              />
-            )}
-          </>
+                <Sidebar 
+                  isOpen={isSidebarOpen} 
+                  setIsOpen={setIsSidebarOpen}
+                  isCollapsed={isSidebarCollapsed}
+                  setIsCollapsed={setIsSidebarCollapsed}
+                  aiUsage={aiUsage}
+                  isSubscribed={isSubscribed}
+                  timeUntilReset={timeUntilReset}
+                  user={user}
+                />
+                
+                <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+                  <Header 
+                    handleLogout={logout} 
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                    isModalOpen={showSubscriptionModal}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                  />
+                  <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto z-10">
+                    <Routes>
+                      <Route path="/login" element={<Navigate to="/dashboard" />} />
+                      <Route path="/" element={<Navigate to="/dashboard" />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/participants" element={<ParticipantsManager {...commonAiProps} isSidebarCollapsed={isSidebarCollapsed} />} />
+                      <Route path="/departments" element={<DepartmentsManager isSidebarCollapsed={isSidebarCollapsed} />} />
+                      <Route path="/templates" element={<TemplatesManager {...commonAiProps} isSidebarCollapsed={isSidebarCollapsed} />} />
+                      <Route path="/blast" element={<BlastManager />} />
+                      <Route path="/history" element={<HistoryManager />} />
+                      <Route path="/analytics" element={<Analytics />} />
+                      <Route path="/settings" element={<SettingsManager />} />
+                      <Route path="/subscription" element={<SubscriptionManager isSubscribed={isSubscribed} setIsSubscribed={setIsSubscribed} />} />
+            <Route path="/billing" element={<BillingManager />} />
+            {user?.role === 'SuperAdmin' && <Route path="/users" element={<UserManager />} />}
+            <Route path="*" element={<Navigate to="/" />} />
+                      <Route path="/settings/sender" element={<SenderSetup />} />
+                      <Route path="/users" element={<UserManager isSidebarCollapsed={isSidebarCollapsed} />} />
+                      <Route path="/activity-log" element={<ActivityLog />} />
+                    </Routes>
+                  </main>
+                </div>
+                {showSubscriptionModal && (
+                  <SubscriptionModal 
+                      onClose={() => setShowSubscriptionModal(false)}
+                      onSubscribe={handleSubscribe}
+                      isSidebarCollapsed={isSidebarCollapsed}
+                  />
+                )}
+              </>
+            }
+          />
         )}
-      </Suspense>
+      </Routes>
     </div>
   );
 };

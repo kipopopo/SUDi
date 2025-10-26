@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         try {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            if (token) {
+            if (token && typeof token === 'string' && token !== 'undefined') { // Add check for "undefined"
                 const decoded = jwtDecode<User>(token);
                 setUser(decoded);
                 setIsAuthenticated(true);
@@ -72,12 +72,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = (token: string, remember: boolean) => {
-        if (remember) {
-            localStorage.setItem('token', token);
-        } else {
-            sessionStorage.setItem('token', token);
-            sessionStorage.setItem('lastActivity', Date.now().toString());
-        }
+        if (token && typeof token === 'string' && token !== 'undefined') {
+            if (remember) {
+                localStorage.setItem('token', token);
+            } else {
+                sessionStorage.setItem('token', token);
+                sessionStorage.setItem('lastActivity', Date.now().toString());
+            }
             try {
                 const decoded = jwtDecode<User>(token);
                 setUser(decoded);
@@ -87,6 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 localStorage.removeItem('token');
                 sessionStorage.removeItem('token');
             }
+        } else {
+            // Handle the case where the token is invalid
+            console.error('Attempted to login with an invalid token:', token);
+            logout();
+        }
     };
 
     const logout = () => {

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // import.meta.env typing can be missing in some TS setups; cast to any to be safe
-  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api',
+  baseURL: (import.meta as any).env?.VITE_API_URL || 'http://72.60.233.190:3001/api',
 });
 
 api.interceptors.request.use(
