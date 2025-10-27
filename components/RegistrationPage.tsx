@@ -191,3 +191,5 @@ const RegistrationPage: React.FC = () => {
         </div>
     );
 };
+
+export default RegistrationPage;
