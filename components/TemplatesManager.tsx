@@ -204,10 +204,17 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
     return ['all', ...Array.from(uniqueCategories).sort()];
   }, [templates]);
 
+  const [templateSearchTerm, setTemplateSearchTerm] = useState('');
+
   const groupedTemplates = useMemo(() => {
-    const filtered = templates.filter(template => 
-        selectedCategory === 'all' || (template.category || 'Uncategorized') === selectedCategory
-    );
+    const filtered = templates.filter(template => {
+        const lowercasedTerm = templateSearchTerm.toLowerCase();
+        const matchesCategory = selectedCategory === 'all' || (template.category || 'Uncategorized') === selectedCategory;
+        const matchesSearch = templateSearchTerm.trim() === '' ||
+            template.name.toLowerCase().includes(lowercasedTerm) ||
+            template.subject.toLowerCase().includes(lowercasedTerm);
+        return matchesCategory && matchesSearch;
+    });
 
     return filtered.reduce((acc, template) => {
         const category = template.category || 'Uncategorized';
@@ -220,6 +227,8 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
 
   }, [templates, selectedCategory]);
 
+
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt) return;
@@ -556,11 +565,11 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                   <FolderIcon />
                   <span>{category}</span>
                 </h2>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {templatesInCategory.map((template) => (
                     <div
                       key={template.id}
-                      className={`bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-4 rounded-lg transition-opacity duration-300 ${ 
+                      className={`bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-4 rounded-lg transition-opacity duration-300 flex flex-col ${ 
                         deletingId === template.id ? 'opacity-0' : ''
                       }`}
                     >
@@ -571,9 +580,8 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                             {template.subject}
                           </p>
                         </div>
-                        <div className="flex items-center space-x-0 sm:space-x-2 flex-shrink-0 ml-4">
+                        <div className="flex items-center space-x-0 sm:space-x-1 flex-shrink-0 ml-2">
                           <p className="text-xs text-light-text-secondary dark:text-brand-text-secondary flex items-center space-x-1">
-                            <span>E-card:</span>
                             <span className={`w-2.5 h-2.5 rounded-full ${template.ecardBackdropPath ? 'bg-green-500' : 'bg-red-500'}`}></span>
                           </p>
                           <button
@@ -599,6 +607,9 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
                           </button>
                         </div>
                       </div>
+                      <div className="text-sm text-light-text-secondary dark:text-brand-text-secondary mt-2 pt-2 border-t border-light-border dark:border-brand-light/20 flex-grow">
+                        <p className="line-clamp-2">{template.body.replace(/<[^>]+>/g, '')}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -623,9 +634,46 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
   return (
     <>
       <div className="animate-fade-in grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 flex flex-col space-y-8">
-          <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4 flex items-center space-x-2 dark:text-white"><AIIcon /> <span>Penjana Kandungan AI</span></h2>
+        <div className="lg:col-span-2">
+          <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
+            <h1 className="text-3xl font-bold font-title dark:text-white">Email Templates</h1>
+            <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start md:self-auto'>
+              <input
+                  type="text"
+                  placeholder="Search templates..."
+                  value={templateSearchTerm}
+                  onChange={(e) => setTemplateSearchTerm(e.target.value)}
+                  className="w-full bg-light-surface dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
+              />
+              <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full bg-light-surface dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
+              >
+                  {categories.map(cat => (
+                      <option key={cat} value={cat} className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">{cat === 'all' ? 'All Categories' : cat}</option>
+                  ))}
+              </select>
+              <button onClick={() => setIsAiModalOpen(true)} className="flex-shrink-0 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
+                <AIIcon />
+                <span>AI Generate</span>
+              </button>
+              <button onClick={handleAddNewTemplate} className="flex-shrink-0 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
+                <PlusIcon />
+                <span>New Template</span>
+              </button>
+            </div>
+          </div>
+          <div className="space-y-6">
+            {renderTemplates()}
+          </div>
+        </div>
+      </div>
+
+      {isAiModalOpen && (
+        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in px-8 py-4 ${isSidebarCollapsed ? 'lg:pl-[calc(5rem+2rem)]' : 'lg:pl-[calc(16rem+2rem)]'}`}>
+          <div className="bg-light-surface dark:bg-brand-dark border border-light-border dark:border-brand-light/20 rounded-lg shadow-2xl w-full max-w-lg max-w-full p-8">
+            <h2 className="text-2xl font-bold mb-4 flex items-center space-x-2 dark:text-white"><AIIcon /> <span>Penjana Kandungan AI</span></h2>
             <p className="text-sm text-light-text-secondary dark:text-brand-text-secondary mb-4">Terangkan emel yang ingin anda hantar, dan AI kami akan menulisnya dalam Bahasa Malaysia untuk anda.</p>
             
             <div className="mb-4">
@@ -663,58 +711,37 @@ const TemplatesManager: React.FC<TemplatesManagerProps> = ({ isSubscribed, aiUsa
             </button>
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             {isAiDisabled && <p className="text-yellow-500 text-xs text-center mt-2">Daily limit reached. <strong>Upgrade to Pro</strong> for unlimited generations.</p>}
-          </div>
 
-          {isGenerating && (
-            <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-6 rounded-lg animate-fade-in">
-                <h3 className="font-bold mb-3 text-brand-accent-purple dark:text-brand-accent flex items-center space-x-2">
-                    <LoadingIcon />
-                    <span>{thinkingText ? `Thinking: ${thinkingText}` : 'Gemini is thinking...'}</span>
-                </h3>
-            </div>
-          )}
+            {isGenerating && (
+              <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-light-border dark:border-brand-light/20 p-6 rounded-lg animate-fade-in mt-4">
+                  <h3 className="font-bold mb-3 text-brand-accent-purple dark:text-brand-accent flex items-center space-x-2">
+                      <LoadingIcon />
+                      <span>{thinkingText ? `Thinking: ${thinkingText}` : 'Gemini is thinking...'}</span>
+                  </h3>
+              </div>
+            )}
 
-          {generatedBody && (
-            <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-brand-accent-purple/30 dark:border-brand-accent/30 p-4 rounded-lg animate-fade-in">
-                <h3 className="font-bold mb-2 dark:text-white">Kandungan Dijana:</h3>
-                <textarea
-                  readOnly
-                  className="w-full h-48 bg-transparent text-light-text-secondary dark:text-brand-text-secondary text-sm p-2 rounded"
-                  value={generatedBody}
-                />
-                <button 
-                  onClick={handleSaveGeneratedTemplate}
-                  className="w-full mt-2 bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
-                  <span>Simpan sebagai Templat Baharu</span>
-                </button>
+            {generatedBody && (
+              <div className="bg-light-surface dark:bg-brand-dark/50 backdrop-blur-sm border border-brand-accent-purple/30 dark:border-brand-accent/30 p-4 rounded-lg animate-fade-in mt-4">
+                  <h3 className="font-bold mb-2 dark:text-white">Kandungan Dijana:</h3>
+                  <textarea
+                    readOnly
+                    className="w-full h-48 bg-transparent text-light-text-secondary dark:text-brand-text-secondary text-sm p-2 rounded"
+                    value={generatedBody}
+                  />
+                  <button 
+                    onClick={handleSaveGeneratedTemplate}
+                    className="w-full mt-2 bg-brand-accent-purple text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
+                    <span>Simpan sebagai Templat Baharu</span>
+                  </button>
+              </div>
+            )}
+            <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-light-border dark:border-brand-light/20">
+                <button onClick={() => setIsAiModalOpen(false)} className="text-light-text-secondary hover:text-light-text dark:text-brand-text-secondary dark:hover:text-white transition">Close</button>
             </div>
-          )}
-        </div>
-
-        <div className="lg:col-span-2">
-          <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
-            <h1 className="text-3xl font-bold font-title dark:text-white">Email Templates</h1>
-            <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start md:self-auto'>
-              <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full bg-light-surface dark:bg-brand-light/50 p-2.5 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
-              >
-                  {categories.map(cat => (
-                      <option key={cat} value={cat} className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">{cat === 'all' ? 'All Categories' : cat}</option>
-                  ))}
-              </select>
-              <button onClick={handleAddNewTemplate} className="flex-shrink-0 bg-brand-accent-purple text-white dark:bg-brand-accent dark:text-brand-darker font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-opacity-90 transition">
-                <PlusIcon />
-                <span>New Template</span>
-              </button>
-            </div>
-          </div>
-          <div className="space-y-6">
-            {renderTemplates()}
           </div>
         </div>
-      </div>
+      )}
 
       {isDeleteModalOpen && templateToDelete && <DeleteTemplateModal template={templateToDelete} onClose={() => setIsDeleteModalOpen(false)} isSidebarCollapsed={isSidebarCollapsed} />}
 

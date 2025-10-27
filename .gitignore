@@ -19,12 +19,13 @@ lerna-debug.log*
 *.sln
 *.sw?
 node_modules/
+branches/
 dist/
 dist-ssr
 *.local
 .gitignore
 TODO.md
-.blackboxrules
 .env
 backend/.env
 backend/ecosystem.config.js
+backend/database.db

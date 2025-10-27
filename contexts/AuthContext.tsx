@@ -85,8 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setIsAuthenticated(true);
             } catch (e) {
                 console.error('Invalid token in storage', e);
-                localStorage.removeItem('token');
-                sessionStorage.removeItem('token');
+                logout(); // This will clear all auth state
             }
         } else {
             // Handle the case where the token is invalid

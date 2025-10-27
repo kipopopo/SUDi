@@ -63,7 +63,7 @@ const QuickActionButton: React.FC<{
 
 const ActivityItem: React.FC<{ item: BlastHistoryItem }> = ({ item }) => {
     const getStatusIcon = () => {
-        const iconClass = "w-6 h-6";
+        const iconClass = "w-5 h-5";
         switch (item.status) {
             case 'Completed':
                 return <CheckCircleIcon className={iconClass} />;

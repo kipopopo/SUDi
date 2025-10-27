@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { validatePassword } from '../utils/validation';
 
 const RegistrationPage: React.FC = () => {
     const { t } = useTranslation();
@@ -11,29 +12,14 @@ const RegistrationPage: React.FC = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [passwordValidations, setPasswordValidations] = useState({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        special: false,
-    });
     const navigate = useNavigate();
 
-    const validatePassword = (password: string) => {
-        setPasswordValidations({
-            length: password.length >= 8,
-            uppercase: /[A-Z]/.test(password),
-            lowercase: /[a-z]/.test(password),
-            number: /\d/.test(password),
-            special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
-        });
-    };
+    // Use a memoized result of validation for rendering password requirements
+    const passwordValidationResults = React.useMemo(() => validatePassword(password), [password]);
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
-        validatePassword(newPassword);
     };
 
     const handleRegister = async () => {
@@ -48,8 +34,9 @@ const RegistrationPage: React.FC = () => {
             return;
         }
 
+        const validation = validatePassword(password);
         // Password strength validation
-        if (!passwordValidations.length || !passwordValidations.uppercase || !passwordValidations.lowercase || !passwordValidations.number || !passwordValidations.special) {
+        if (!validation.length || !validation.uppercase || !validation.lowercase || !validation.number || !validation.special) {
             setError('Password does not meet the requirements. Please ensure it has at least 8 characters, includes uppercase and lowercase letters, a number, and a special character.');
             return;
         }
@@ -177,24 +164,24 @@ const RegistrationPage: React.FC = () => {
                     <div className="mt-6 p-4 bg-light-bg dark:bg-brand-light/20 rounded-md">
                         <h4 className="font-medium text-light-text dark:text-white mb-2">{t('registrationPage.passwordRequirementsTitle')}</h4>
                         <ul className="text-xs space-y-1">
-                            <li className={`flex items-center ${passwordValidations.length ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
-                                <span className={`mr-2 ${passwordValidations.length ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
+                            <li className={`flex items-center ${passwordValidationResults.length ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
+                                <span className={`mr-2 ${passwordValidationResults.length ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
                                 {t('registrationPage.passwordRequirement1')}
                             </li>
-                            <li className={`flex items-center ${passwordValidations.uppercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
-                                <span className={`mr-2 ${passwordValidations.uppercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
+                            <li className={`flex items-center ${passwordValidationResults.uppercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
+                                <span className={`mr-2 ${passwordValidationResults.uppercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
                                 {t('registrationPage.passwordRequirement2')}
                             </li>
-                            <li className={`flex items-center ${passwordValidations.lowercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
-                                <span className={`mr-2 ${passwordValidations.lowercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
+                            <li className={`flex items-center ${passwordValidationResults.lowercase ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
+                                <span className={`mr-2 ${passwordValidationResults.lowercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
                                 {t('registrationPage.passwordRequirement3')}
                             </li>
-                            <li className={`flex items-center ${passwordValidations.number ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
-                                <span className={`mr-2 ${passwordValidations.number ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
+                            <li className={`flex items-center ${passwordValidationResults.number ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
+                                <span className={`mr-2 ${passwordValidationResults.number ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
                                 {t('registrationPage.passwordRequirement4')}
                             </li>
-                            <li className={`flex items-center ${passwordValidations.special ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
-                                <span className={`mr-2 ${passwordValidations.special ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
+                            <li className={`flex items-center ${passwordValidationResults.special ? 'text-green-600 dark:text-green-400' : 'text-light-text-secondary dark:text-brand-text-secondary'}`}>
+                                <span className={`mr-2 ${passwordValidationResults.special ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>✓</span>
                                 {t('registrationPage.passwordRequirement5')}
                             </li>
                         </ul>

@@ -1,12 +1,96 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Participant, Department, AiUsage } from '../types';
-import { EditIcon, DeleteIcon, PlusIcon, UploadIcon, HelpIcon, AIIcon, LoadingIcon, SortUpIcon, SortDownIcon, SortIcon } from './common/Icons';
+import { EditIcon, DeleteIcon, PlusIcon, UploadIcon, HelpIcon, AIIcon, LoadingIcon, SortUpIcon, SortDownIcon } from './common/Icons';
+import { TutorialModal } from './common/TutorialModal';
+import { suggestPaEmailsForParticipants } from '../services/geminiService';
+import { useData } from '../contexts/DataContext';
+import { AddParticipantModal, EditParticipantModal, DeleteParticipantModal } from './ParticipantModals';
 
-// ... (rest of the component)
+interface ParticipantsManagerProps {
+  isSubscribed: boolean;
+  aiUsage: AiUsage;
+  refreshAiUsage: () => void;
+  promptSubscription: () => void;
+  isSidebarCollapsed: boolean;
+}
 
+type SortKey = keyof Omit<Participant, 'departmentId'> | 'departmentName';
+interface SortConfig {
+  key: SortKey;
+  direction: 'ascending' | 'descending';
+}
+
+const ParticipantsManager: React.FC<ParticipantsManagerProps> = ({ isSubscribed, aiUsage, refreshAiUsage, promptSubscription, isSidebarCollapsed }) => {
+  const { participants, setParticipants, departments } = useData();
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importMessage, setImportMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isScanningForPAs, setIsScanningForPAs] = useState(false);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
+  
+  const [isPaModalOpen, setIsPaModalOpen] = useState(false);
+  const [participantsForPaUpdate, setParticipantsForPaUpdate] = useState<Participant[]>([]);
+  const [paEmailInputs, setPaEmailInputs] = useState<Record<string, string>>({});
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+
+  const isAiDisabled = !isSubscribed && aiUsage.isExceeded;
+
+  const departmentMap = useMemo(() => 
+    new Map(departments.map(d => [d.id, d.name])),
+  [departments]);
+
+  const filteredParticipants = useMemo(() => {
+    let filtered = participants.filter(p => {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        const matchesDepartment = selectedDepartment === 'all' || p.departmentId === selectedDepartment;
+        const matchesSearch = searchTerm.trim() === '' ||
+            p.name.toLowerCase().includes(lowercasedTerm) ||
+            p.email.toLowerCase().includes(lowercasedTerm) ||
+            p.role.toLowerCase().includes(lowercasedTerm);
+        return matchesDepartment && matchesSearch;
+    });
+
+    if (sortConfig) {
+      filtered.sort((a, b) => {
+        let comparison = 0;
+        
+        if (sortConfig.key === 'departmentName') {
+          const aDept = departmentMap.get(a.departmentId) || '';
+          const bDept = departmentMap.get(b.departmentId) || '';
+          comparison = aDept.localeCompare(bDept, undefined, { sensitivity: 'base' });
+        } else {
+          const key = sortConfig.key as keyof Participant;
+          const valA = a[key] ?? '';
+          const valB = b[key] ?? '';
+          comparison = String(valA).localeCompare(String(valB), undefined, { sensitivity: 'base' });
+        }
+
+        return sortConfig.direction === 'ascending' ? comparison : -comparison;
+      });
+    }
+    
+    return filtered;
+  }, [participants, searchTerm, selectedDepartment, sortConfig, departmentMap]);
+
+  const requestSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
   const getSortIndicator = (key: SortKey) => {
     if (!sortConfig || sortConfig.key !== key) {
-      return <SortIcon className="opacity-0 group-hover:opacity-50" />;
+      return <SortIcon className="w-4 h-4 opacity-0 group-hover:opacity-50" />;
     }
     return sortConfig.direction === 'ascending' ? <SortUpIcon /> : <SortDownIcon />;
   };
@@ -161,7 +245,7 @@ import { EditIcon, DeleteIcon, PlusIcon, UploadIcon, HelpIcon, AIIcon, LoadingIc
     <>
       <div className="animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
-          <h1 className="text-3xl font-bold font-title dark:text-white">Manage Participants</h1>
+          <h1 className="text-3xl font-bold font-title">Manage Participants</h1>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start md:self-auto">
               <button
                 onClick={() => setIsTutorialOpen(true)}
@@ -224,7 +308,7 @@ import { EditIcon, DeleteIcon, PlusIcon, UploadIcon, HelpIcon, AIIcon, LoadingIc
                     className="w-full bg-light-surface dark:bg-brand-light/50 p-3 rounded-md border border-light-border dark:border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-accent-purple dark:focus:ring-brand-accent text-sm text-light-text dark:text-brand-text"
                 >
                     <option value="all" className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">All Departments</option>
-                    {(departments || []).slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())).map(dept => (
+                    {departments.map(dept => (
                         <option key={dept.id} value={dept.id} className="bg-light-surface dark:bg-brand-dark text-light-text dark:text-brand-text">{dept.name}</option>
                     ))}
                 </select>
@@ -403,8 +487,8 @@ Charlie Chaplin,charlie@example.com,,Marketing,assist.charlie@example.com`}
         </div>
       )}
 
-                    </>
+    </>
+  );
+};
 
-                  );
-
-                };export default ParticipantsManager;
+export default ParticipantsManager;

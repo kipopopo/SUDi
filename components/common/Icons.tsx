@@ -249,3 +249,7 @@ export const InfoIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
 export const TimeIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 );
+
+export const SortIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h9m-9 4h9m5-4v8m0 0l-2-2m2 2l2-2" /></svg>
+);
